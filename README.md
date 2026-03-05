@@ -32,6 +32,7 @@ feishu-cli 是一个功能完整的飞书开放平台命令行工具。它将飞
 - **双向转换零损耗** — 支持 40+ 种块类型，Markdown 导入飞书后再导出，内容完整保留
 - **图表原生渲染** — Mermaid（8 种图表类型）和 PlantUML 自动转换为飞书画板，不是截图，是可编辑的矢量图
 - **大规模文档处理** — 三阶段并发管道架构，实测 10,000+ 行 / 127 个图表 / 170+ 个表格一次导入
+- **OAuth 用户授权** — 支持 OAuth 2.0 用户授权，以用户身份访问飞书资源，无需逐个添加协作者
 - **AI Agent 原生** — 8 个技能文件覆盖飞书全功能，AI 助手即装即用
 - **一个工具覆盖全平台** — 文档、知识库、表格、消息、日历、任务、权限、画板、评论、搜索
 
@@ -172,7 +173,7 @@ cd feishu-cli && make build
 
 1. 在 [飞书开放平台](https://open.feishu.cn/app) 创建应用，获取 App ID 和 App Secret
 2. 给应用添加所需权限（参见[权限要求](#权限要求)）
-3. 配置凭证（二选一）：
+3. 配置凭证：
 
 ```bash
 # 方式一：环境变量（推荐）
@@ -182,6 +183,28 @@ export FEISHU_APP_SECRET="xxx"
 # 方式二：配置文件 ~/.feishu-cli/config.yaml
 feishu-cli config init
 ```
+
+### OAuth 用户授权（可选）
+
+某些功能（如消息搜索）需要使用用户身份访问飞书资源，可通过 OAuth 授权：
+
+```bash
+# 启动 OAuth 授权流程，打开浏览器完成授权
+feishu-cli login
+
+# 使用用户身份执行命令
+feishu-cli --token-mode user search messages "关键词"
+
+# 退出登录，清除本地令牌
+feishu-cli logout
+```
+
+**令牌模式**：
+- `auto`（默认）：优先使用用户令牌，无则使用应用令牌
+- `user`：强制使用用户令牌，无令牌则报错
+- `tenant`：使用应用令牌（tenant_access_token）
+
+令牌安全存储在 `~/.feishu-cli/user_token.json`（0600 权限），自动刷新。
 
 ### 验证安装
 
@@ -213,7 +236,12 @@ Commands:
   board     画板操作（导入图表、下载图片）
   comment   评论操作（列出、添加、解决/恢复、回复管理）
   search    搜索操作（消息、应用）
+  login     OAuth 用户授权登录
+  logout    退出登录，清除用户令牌
   config    配置管理
+
+Global Flags:
+  --token-mode string   令牌模式: auto/user/tenant (默认 auto)
 ```
 
 <details>
@@ -423,6 +451,11 @@ feishu-cli file stats <file_token> --doc-type docx
 feishu-cli doc export-file <doc_token> --type pdf -o output.pdf
 feishu-cli doc import-file local_file.docx --type docx --name "文档名"
 
+# OAuth 用户授权（用于搜索等需要用户身份的功能）
+feishu-cli login                              # 启动授权流程
+feishu-cli logout                             # 清除令牌
+feishu-cli --token-mode user search messages "关键词"  # 使用用户令牌搜索
+
 # 素材上传
 feishu-cli media upload image.png --parent-type docx_image --parent-node <doc_id>
 
@@ -546,7 +579,7 @@ feishu-cli dept children <department_id>
 | 日历 | `calendar:calendar:readonly`, `calendar:calendar` | 需单独申请 |
 | 任务 | `task:task:read`, `task:task:write` | 需单独申请 |
 | 任务列表 | `task:tasklist:read`, `task:tasklist:write` | 任务列表管理 |
-| 搜索 | 需要 User Access Token | 用户授权 |
+| 搜索 | 需要 User Access Token | 执行 `feishu-cli login` 授权 |
 
 ## 技术栈
 
