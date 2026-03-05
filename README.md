@@ -162,7 +162,7 @@ go install github.com/riba2534/feishu-cli@latest
 **从源码编译**
 
 ```bash
-git clone https://github.com/riba2534/feishu-cli.git
+git clone https://github.com/fuyuntt/feishu-cli.git
 cd feishu-cli && make build
 # 二进制文件输出到 bin/feishu-cli
 ```
@@ -614,7 +614,7 @@ feishu-cli/
 
 ```bash
 # 克隆项目
-git clone https://github.com/riba2534/feishu-cli.git
+git clone https://github.com/fuyuntt/feishu-cli.git
 cd feishu-cli
 
 # 安装依赖
