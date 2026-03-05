@@ -9,6 +9,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/fuyuntt/feishu-cli/releases"><img src="https://img.shields.io/github/v/release/fuyuntt/feishu-cli?style=for-the-badge&color=00ADD8" alt="Release" /></a>
   <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-1.21+-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Go" /></a>
   <a href="https://github.com/fuyuntt/feishu-cli/stargazers"><img src="https://img.shields.io/github/stars/fuyuntt/feishu-cli?style=for-the-badge&color=f5a623" alt="Stars" /></a>
   <a href="https://github.com/fuyuntt/feishu-cli/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-teal.svg?style=for-the-badge" alt="License" /></a>
@@ -122,6 +123,36 @@ feishu-cli doc import large-doc.md --title "大文档" \
 
 ### 安装
 
+**一键安装（推荐）**
+
+自动检测平台，下载最新版本并安装到 `/usr/local/bin`：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/fuyuntt/feishu-cli/main/install.sh | bash
+```
+
+已安装的用户执行同样的命令即可更新到最新版本。
+
+<details>
+<summary>其他安装方式</summary>
+
+**手动下载**
+
+从 [Releases](https://github.com/fuyuntt/feishu-cli/releases/latest) 页面下载对应平台的压缩包：
+
+| 平台 | 文件 |
+|------|------|
+| Linux x64 | `feishu-cli_*_linux-amd64.tar.gz` |
+| Linux ARM64 | `feishu-cli_*_linux-arm64.tar.gz` |
+| macOS Intel | `feishu-cli_*_darwin-amd64.tar.gz` |
+| macOS Apple Silicon | `feishu-cli_*_darwin-arm64.tar.gz` |
+| Windows x64 | `feishu-cli_*_windows_amd64.tar.gz` |
+
+```bash
+tar -xzf feishu-cli_*_linux-amd64.tar.gz
+sudo mv feishu-cli_*/feishu-cli /usr/local/bin/
+```
+
 **使用 go install**
 
 ```bash
@@ -135,6 +166,8 @@ git clone https://github.com/fuyuntt/feishu-cli.git
 cd feishu-cli && make build
 # 二进制文件输出到 bin/feishu-cli
 ```
+
+</details>
 
 ### 配置凭证
 
