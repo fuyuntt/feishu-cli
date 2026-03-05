@@ -9,10 +9,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/riba2534/feishu-cli/releases"><img src="https://img.shields.io/github/v/release/riba2534/feishu-cli?style=for-the-badge&color=00ADD8" alt="Release" /></a>
   <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-1.21+-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Go" /></a>
-  <a href="https://github.com/riba2534/feishu-cli/stargazers"><img src="https://img.shields.io/github/stars/riba2534/feishu-cli?style=for-the-badge&color=f5a623" alt="Stars" /></a>
-  <a href="https://github.com/riba2534/feishu-cli/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-teal.svg?style=for-the-badge" alt="License" /></a>
+  <a href="https://github.com/fuyuntt/feishu-cli/stargazers"><img src="https://img.shields.io/github/stars/fuyuntt/feishu-cli?style=for-the-badge&color=f5a623" alt="Stars" /></a>
+  <a href="https://github.com/fuyuntt/feishu-cli/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-teal.svg?style=for-the-badge" alt="License" /></a>
 </p>
 
 <p align="center">
@@ -123,40 +122,10 @@ feishu-cli doc import large-doc.md --title "大文档" \
 
 ### 安装
 
-**一键安装（推荐）**
-
-自动检测平台，下载最新版本并安装到 `/usr/local/bin`：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/riba2534/feishu-cli/main/install.sh | bash
-```
-
-已安装的用户执行同样的命令即可更新到最新版本。
-
-<details>
-<summary>其他安装方式</summary>
-
-**手动下载**
-
-从 [Releases](https://github.com/riba2534/feishu-cli/releases/latest) 页面下载对应平台的压缩包：
-
-| 平台 | 文件 |
-|------|------|
-| Linux x64 | `feishu-cli_*_linux-amd64.tar.gz` |
-| Linux ARM64 | `feishu-cli_*_linux-arm64.tar.gz` |
-| macOS Intel | `feishu-cli_*_darwin-amd64.tar.gz` |
-| macOS Apple Silicon | `feishu-cli_*_darwin-arm64.tar.gz` |
-| Windows x64 | `feishu-cli_*_windows_amd64.tar.gz` |
-
-```bash
-tar -xzf feishu-cli_*_linux-amd64.tar.gz
-sudo mv feishu-cli_*/feishu-cli /usr/local/bin/
-```
-
 **使用 go install**
 
 ```bash
-go install github.com/riba2534/feishu-cli@latest
+go install github.com/fuyuntt/feishu-cli@latest
 ```
 
 **从源码编译**
@@ -166,8 +135,6 @@ git clone https://github.com/fuyuntt/feishu-cli.git
 cd feishu-cli && make build
 # 二进制文件输出到 bin/feishu-cli
 ```
-
-</details>
 
 ### 配置凭证
 
@@ -645,11 +612,11 @@ go vet ./...
 
 ## Star History
 
-<a href="https://star-history.com/#riba2534/feishu-cli&Date">
+<a href="https://star-history.com/#fuyuntt/feishu-cli&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=riba2534/feishu-cli&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=riba2534/feishu-cli&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=riba2534/feishu-cli&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=fuyuntt/feishu-cli&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=fuyuntt/feishu-cli&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=fuyuntt/feishu-cli&type=Date" />
  </picture>
 </a>
 
@@ -662,4 +629,3 @@ go vet ./...
 - [飞书开放平台](https://open.feishu.cn/) — 创建应用、获取凭证
 - [飞书 API 文档](https://open.feishu.cn/document/) — 接口参考
 - [Claude Code](https://claude.ai/claude-code) — AI 编程助手
-- [HappyClaw](https://github.com/riba2534/happyclaw) — 基于 Claude Agent SDK 的自托管多用户 AI Agent 系统
