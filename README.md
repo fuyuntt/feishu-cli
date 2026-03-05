@@ -206,6 +206,8 @@ feishu-cli logout
 
 令牌安全存储在 `~/.feishu-cli/user_token.json`（0600 权限），自动刷新。
 
+> **注意**：如果 `feishu-cli login` 报错，请检查飞书开放平台应用中 **安全设置 → 重定向 URL 白名单** 是否已添加 `http://localhost:3000/callback`
+
 ### 验证安装
 
 ```bash
