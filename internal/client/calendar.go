@@ -48,6 +48,11 @@ func ListCalendars(pageSize int, pageToken string) ([]*Calendar, string, bool, e
 		return nil, "", false, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, "", false, tokenErr
+	}
+
 	reqBuilder := larkcalendar.NewListCalendarReqBuilder()
 	if pageSize > 0 {
 		reqBuilder.PageSize(pageSize)
@@ -56,7 +61,7 @@ func ListCalendars(pageSize int, pageToken string) ([]*Calendar, string, bool, e
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Calendar.Calendar.List(Context(), reqBuilder.Build())
+	resp, err := client.Calendar.Calendar.List(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, "", false, fmt.Errorf("获取日历列表失败: %w", err)
 	}
@@ -111,6 +116,11 @@ func CreateEvent(params *CreateEventParams) (*CalendarEvent, error) {
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	startTs, err := parseTimeToTimestamp(params.StartTime)
 	if err != nil {
 		return nil, fmt.Errorf("解析开始时间失败: %w", err)
@@ -148,7 +158,7 @@ func CreateEvent(params *CreateEventParams) (*CalendarEvent, error) {
 		CalendarEvent(eventBuilder.Build()).
 		Build()
 
-	resp, err := client.Calendar.CalendarEvent.Create(Context(), req)
+	resp, err := client.Calendar.CalendarEvent.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("创建日程失败: %w", err)
 	}
@@ -171,12 +181,17 @@ func GetEvent(calendarID, eventID string) (*CalendarEvent, error) {
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	req := larkcalendar.NewGetCalendarEventReqBuilder().
 		CalendarId(calendarID).
 		EventId(eventID).
 		Build()
 
-	resp, err := client.Calendar.CalendarEvent.Get(Context(), req)
+	resp, err := client.Calendar.CalendarEvent.Get(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取日程详情失败: %w", err)
 	}
@@ -208,6 +223,11 @@ func ListEvents(params *ListEventsParams) ([]*CalendarEvent, string, bool, error
 		return nil, "", false, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, "", false, tokenErr
+	}
+
 	reqBuilder := larkcalendar.NewListCalendarEventReqBuilder().
 		CalendarId(params.CalendarID)
 
@@ -235,7 +255,7 @@ func ListEvents(params *ListEventsParams) ([]*CalendarEvent, string, bool, error
 		reqBuilder.PageToken(params.PageToken)
 	}
 
-	resp, err := client.Calendar.CalendarEvent.List(Context(), reqBuilder.Build())
+	resp, err := client.Calendar.CalendarEvent.List(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, "", false, fmt.Errorf("获取日程列表失败: %w", err)
 	}
@@ -277,6 +297,11 @@ func UpdateEvent(params *UpdateEventParams) (*CalendarEvent, error) {
 	client, err := GetClient()
 	if err != nil {
 		return nil, err
+	}
+
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
 	}
 
 	eventBuilder := larkcalendar.NewCalendarEventBuilder()
@@ -324,7 +349,7 @@ func UpdateEvent(params *UpdateEventParams) (*CalendarEvent, error) {
 		CalendarEvent(eventBuilder.Build()).
 		Build()
 
-	resp, err := client.Calendar.CalendarEvent.Patch(Context(), req)
+	resp, err := client.Calendar.CalendarEvent.Patch(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("更新日程失败: %w", err)
 	}
@@ -347,12 +372,17 @@ func DeleteEvent(calendarID, eventID string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	req := larkcalendar.NewDeleteCalendarEventReqBuilder().
 		CalendarId(calendarID).
 		EventId(eventID).
 		Build()
 
-	resp, err := client.Calendar.CalendarEvent.Delete(Context(), req)
+	resp, err := client.Calendar.CalendarEvent.Delete(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("删除日程失败: %w", err)
 	}
@@ -421,11 +451,16 @@ func GetCalendar(calendarID string) (*Calendar, error) {
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	req := larkcalendar.NewGetCalendarReqBuilder().
 		CalendarId(calendarID).
 		Build()
 
-	resp, err := client.Calendar.Calendar.Get(Context(), req)
+	resp, err := client.Calendar.Calendar.Get(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取日历详情失败: %w", err)
 	}
@@ -459,9 +494,14 @@ func GetPrimaryCalendar() (*Calendar, error) {
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	req := larkcalendar.NewPrimaryCalendarReqBuilder().Build()
 
-	resp, err := client.Calendar.Calendar.Primary(Context(), req)
+	resp, err := client.Calendar.Calendar.Primary(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取主日历失败: %w", err)
 	}
@@ -498,6 +538,11 @@ func SearchEvents(calendarID, query string, startTime, endTime string, pageToken
 	client, err := GetClient()
 	if err != nil {
 		return nil, "", err
+	}
+
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, "", tokenErr
 	}
 
 	bodyBuilder := larkcalendar.NewSearchCalendarEventReqBodyBuilder().
@@ -541,7 +586,7 @@ func SearchEvents(calendarID, query string, startTime, endTime string, pageToken
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Calendar.CalendarEvent.Search(Context(), reqBuilder.Build())
+	resp, err := client.Calendar.CalendarEvent.Search(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, "", fmt.Errorf("搜索日程失败: %w", err)
 	}
@@ -570,6 +615,11 @@ func AddEventAttendees(calendarID, eventID string, attendees []*EventAttendee) e
 	client, err := GetClient()
 	if err != nil {
 		return err
+	}
+
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
 	}
 
 	var sdkAttendees []*larkcalendar.CalendarEventAttendee
@@ -602,7 +652,7 @@ func AddEventAttendees(calendarID, eventID string, attendees []*EventAttendee) e
 		Body(body).
 		Build()
 
-	resp, err := client.Calendar.CalendarEventAttendee.Create(Context(), req)
+	resp, err := client.Calendar.CalendarEventAttendee.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("添加日程参与人失败: %w", err)
 	}
@@ -621,6 +671,11 @@ func ListEventAttendees(calendarID, eventID string, pageSize int, pageToken stri
 		return nil, "", false, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, "", false, tokenErr
+	}
+
 	reqBuilder := larkcalendar.NewListCalendarEventAttendeeReqBuilder().
 		CalendarId(calendarID).
 		EventId(eventID)
@@ -632,7 +687,7 @@ func ListEventAttendees(calendarID, eventID string, pageSize int, pageToken stri
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Calendar.CalendarEventAttendee.List(Context(), reqBuilder.Build())
+	resp, err := client.Calendar.CalendarEventAttendee.List(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, "", false, fmt.Errorf("获取日程参与人列表失败: %w", err)
 	}
@@ -677,6 +732,11 @@ func ListFreebusy(startTime, endTime string, userID string) ([]*FreebusyInfo, er
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	bodyBuilder := larkcalendar.NewListFreebusyReqBodyBuilder().
 		TimeMin(startTime).
 		TimeMax(endTime)
@@ -689,7 +749,7 @@ func ListFreebusy(startTime, endTime string, userID string) ([]*FreebusyInfo, er
 		Body(bodyBuilder.Build()).
 		Build()
 
-	resp, err := client.Calendar.Freebusy.List(Context(), req)
+	resp, err := client.Calendar.Freebusy.List(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("查询忙闲信息失败: %w", err)
 	}
@@ -718,6 +778,11 @@ func ReplyEvent(calendarID, eventID, rsvpStatus string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	body := larkcalendar.NewReplyCalendarEventReqBodyBuilder().
 		RsvpStatus(rsvpStatus).
 		Build()
@@ -728,7 +793,7 @@ func ReplyEvent(calendarID, eventID, rsvpStatus string) error {
 		Body(body).
 		Build()
 
-	resp, err := client.Calendar.CalendarEvent.Reply(Context(), req)
+	resp, err := client.Calendar.CalendarEvent.Reply(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("回复日程失败: %w", err)
 	}

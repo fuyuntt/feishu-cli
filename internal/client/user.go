@@ -42,6 +42,11 @@ func GetUserInfo(userID string, opts GetUserInfoOptions) (*UserInfo, error) {
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	if opts.UserIDType == "" {
 		opts.UserIDType = "open_id"
 	}
@@ -54,7 +59,7 @@ func GetUserInfo(userID string, opts GetUserInfoOptions) (*UserInfo, error) {
 		reqBuilder.DepartmentIdType(opts.DepartmentIDType)
 	}
 
-	resp, err := client.Contact.User.Get(Context(), reqBuilder.Build())
+	resp, err := client.Contact.User.Get(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取用户信息失败: %w", err)
 	}
@@ -117,6 +122,11 @@ func BatchGetUserInfo(userIDs []string, userIDType string) ([]*UserInfo, error) 
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	if userIDType == "" {
 		userIDType = "open_id"
 	}
@@ -136,7 +146,7 @@ func BatchGetUserInfo(userIDs []string, userIDType string) ([]*UserInfo, error) 
 			UserIdType(userIDType).
 			Build()
 
-		resp, err := c.Contact.User.Batch(Context(), req)
+		resp, err := c.Contact.User.Batch(Context(), req, tokenOpt)
 		if err != nil {
 			return result, fmt.Errorf("批量获取用户信息失败: %w", err)
 		}

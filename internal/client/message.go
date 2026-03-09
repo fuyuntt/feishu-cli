@@ -14,6 +14,11 @@ func SendMessage(receiveIDType string, receiveID string, msgType string, content
 		return "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", tokenErr
+	}
+
 	req := larkim.NewCreateMessageReqBuilder().
 		ReceiveIdType(receiveIDType).
 		Body(larkim.NewCreateMessageReqBodyBuilder().
@@ -23,7 +28,7 @@ func SendMessage(receiveIDType string, receiveID string, msgType string, content
 			Build()).
 		Build()
 
-	resp, err := client.Im.Message.Create(Context(), req)
+	resp, err := client.Im.Message.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return "", fmt.Errorf("发送消息失败: %w", err)
 	}
@@ -46,6 +51,11 @@ func ReplyMessage(messageID string, msgType string, content string) (string, err
 		return "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", tokenErr
+	}
+
 	req := larkim.NewReplyMessageReqBuilder().
 		MessageId(messageID).
 		Body(larkim.NewReplyMessageReqBodyBuilder().
@@ -54,7 +64,7 @@ func ReplyMessage(messageID string, msgType string, content string) (string, err
 			Build()).
 		Build()
 
-	resp, err := client.Im.Message.Reply(Context(), req)
+	resp, err := client.Im.Message.Reply(Context(), req, tokenOpt)
 	if err != nil {
 		return "", fmt.Errorf("回复消息失败: %w", err)
 	}
@@ -77,6 +87,11 @@ func UpdateMessage(messageID string, content string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	req := larkim.NewPatchMessageReqBuilder().
 		MessageId(messageID).
 		Body(larkim.NewPatchMessageReqBodyBuilder().
@@ -84,7 +99,7 @@ func UpdateMessage(messageID string, content string) error {
 			Build()).
 		Build()
 
-	resp, err := client.Im.Message.Patch(Context(), req)
+	resp, err := client.Im.Message.Patch(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("更新消息失败: %w", err)
 	}
@@ -129,11 +144,16 @@ func DeleteMessage(messageID string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	req := larkim.NewDeleteMessageReqBuilder().
 		MessageId(messageID).
 		Build()
 
-	resp, err := client.Im.Message.Delete(Context(), req)
+	resp, err := client.Im.Message.Delete(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("删除消息失败: %w", err)
 	}
@@ -169,6 +189,11 @@ func ListMessages(containerID string, opts ListMessagesOptions) (*ListMessagesRe
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	reqBuilder := larkim.NewListMessageReqBuilder().
 		ContainerIdType(opts.ContainerIDType).
 		ContainerId(containerID)
@@ -189,7 +214,7 @@ func ListMessages(containerID string, opts ListMessagesOptions) (*ListMessagesRe
 		reqBuilder.PageToken(opts.PageToken)
 	}
 
-	resp, err := client.Im.Message.List(Context(), reqBuilder.Build())
+	resp, err := client.Im.Message.List(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取消息列表失败: %w", err)
 	}
@@ -217,11 +242,16 @@ func GetMessage(messageID string) (*GetMessageResult, error) {
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	req := larkim.NewGetMessageReqBuilder().
 		MessageId(messageID).
 		Build()
 
-	resp, err := client.Im.Message.Get(Context(), req)
+	resp, err := client.Im.Message.Get(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取消息详情失败: %w", err)
 	}
@@ -246,6 +276,11 @@ func ForwardMessage(messageID string, receiveID string, receiveIDType string) (s
 		return "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", tokenErr
+	}
+
 	req := larkim.NewForwardMessageReqBuilder().
 		MessageId(messageID).
 		ReceiveIdType(receiveIDType).
@@ -254,7 +289,7 @@ func ForwardMessage(messageID string, receiveID string, receiveIDType string) (s
 			Build()).
 		Build()
 
-	resp, err := client.Im.Message.Forward(Context(), req)
+	resp, err := client.Im.Message.Forward(Context(), req, tokenOpt)
 	if err != nil {
 		return "", fmt.Errorf("转发消息失败: %w", err)
 	}
@@ -316,6 +351,11 @@ func SearchChats(opts SearchChatsOptions) (*SearchChatsResult, error) {
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	if opts.UserIDType == "" {
 		opts.UserIDType = "open_id"
 	}
@@ -330,7 +370,7 @@ func SearchChats(opts SearchChatsOptions) (*SearchChatsResult, error) {
 		reqBuilder.PageToken(opts.PageToken)
 	}
 
-	resp, err := client.Im.Chat.List(Context(), reqBuilder.Build())
+	resp, err := client.Im.Chat.List(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("搜索群聊失败: %w", err)
 	}
@@ -404,6 +444,11 @@ func MergeForwardMessage(receiveID, receiveIDType string, messageIDs []string) (
 		return "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", tokenErr
+	}
+
 	req := larkim.NewMergeForwardMessageReqBuilder().
 		ReceiveIdType(receiveIDType).
 		Body(larkim.NewMergeForwardMessageReqBodyBuilder().
@@ -412,7 +457,7 @@ func MergeForwardMessage(receiveID, receiveIDType string, messageIDs []string) (
 			Build()).
 		Build()
 
-	resp, err := client.Im.Message.MergeForward(Context(), req)
+	resp, err := client.Im.Message.MergeForward(Context(), req, tokenOpt)
 	if err != nil {
 		return "", fmt.Errorf("合并转发消息失败: %w", err)
 	}
@@ -435,6 +480,11 @@ func CreateReaction(messageID, emojiType string) (string, error) {
 		return "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", tokenErr
+	}
+
 	req := larkim.NewCreateMessageReactionReqBuilder().
 		MessageId(messageID).
 		Body(larkim.NewCreateMessageReactionReqBodyBuilder().
@@ -442,7 +492,7 @@ func CreateReaction(messageID, emojiType string) (string, error) {
 			Build()).
 		Build()
 
-	resp, err := client.Im.MessageReaction.Create(Context(), req)
+	resp, err := client.Im.MessageReaction.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return "", fmt.Errorf("添加表情回复失败: %w", err)
 	}
@@ -465,12 +515,17 @@ func DeleteReaction(messageID, reactionID string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	req := larkim.NewDeleteMessageReactionReqBuilder().
 		MessageId(messageID).
 		ReactionId(reactionID).
 		Build()
 
-	resp, err := client.Im.MessageReaction.Delete(Context(), req)
+	resp, err := client.Im.MessageReaction.Delete(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("删除表情回复失败: %w", err)
 	}
@@ -496,6 +551,11 @@ func ListReactions(messageID, emojiType string, pageSize int, pageToken string) 
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	reqBuilder := larkim.NewListMessageReactionReqBuilder().
 		MessageId(messageID)
 
@@ -509,7 +569,7 @@ func ListReactions(messageID, emojiType string, pageSize int, pageToken string) 
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Im.MessageReaction.List(Context(), reqBuilder.Build())
+	resp, err := client.Im.MessageReaction.List(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取表情回复列表失败: %w", err)
 	}
@@ -532,13 +592,18 @@ func PinMessage(messageID string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	req := larkim.NewCreatePinReqBuilder().
 		Body(larkim.NewCreatePinReqBodyBuilder().
 			MessageId(messageID).
 			Build()).
 		Build()
 
-	resp, err := client.Im.Pin.Create(Context(), req)
+	resp, err := client.Im.Pin.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("置顶消息失败: %w", err)
 	}
@@ -557,11 +622,16 @@ func UnpinMessage(messageID string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	req := larkim.NewDeletePinReqBuilder().
 		MessageId(messageID).
 		Build()
 
-	resp, err := client.Im.Pin.Delete(Context(), req)
+	resp, err := client.Im.Pin.Delete(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("取消置顶消息失败: %w", err)
 	}
@@ -587,6 +657,11 @@ func ListPins(chatID string, startTime, endTime, pageToken string, pageSize int)
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	reqBuilder := larkim.NewListPinReqBuilder().
 		ChatId(chatID)
 
@@ -603,7 +678,7 @@ func ListPins(chatID string, startTime, endTime, pageToken string, pageSize int)
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Im.Pin.List(Context(), reqBuilder.Build())
+	resp, err := client.Im.Pin.List(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取置顶消息列表失败: %w", err)
 	}
@@ -626,6 +701,11 @@ func GetReadUsers(messageID string, userIDType string, pageSize int, pageToken s
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	reqBuilder := larkim.NewReadUsersMessageReqBuilder().
 		MessageId(messageID).
 		UserIdType(userIDType)
@@ -637,7 +717,7 @@ func GetReadUsers(messageID string, userIDType string, pageSize int, pageToken s
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Im.Message.ReadUsers(Context(), reqBuilder.Build())
+	resp, err := client.Im.Message.ReadUsers(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("查询消息已读用户失败: %w", err)
 	}

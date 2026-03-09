@@ -39,6 +39,11 @@ func ListComments(fileToken string, fileType string, pageSize int, pageToken str
 		return nil, "", false, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, "", false, tokenErr
+	}
+
 	reqBuilder := larkdrive.NewListFileCommentReqBuilder().
 		FileToken(fileToken).
 		FileType(fileType)
@@ -50,7 +55,7 @@ func ListComments(fileToken string, fileType string, pageSize int, pageToken str
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Drive.FileComment.List(Context(), reqBuilder.Build())
+	resp, err := client.Drive.FileComment.List(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, "", false, fmt.Errorf("获取评论列表失败: %w", err)
 	}
@@ -92,6 +97,11 @@ func CreateComment(fileToken string, fileType string, content string) (string, e
 		return "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", tokenErr
+	}
+
 	textRun := larkdrive.NewTextRunBuilder().
 		Text(content).
 		Build()
@@ -116,7 +126,7 @@ func CreateComment(fileToken string, fileType string, content string) (string, e
 			Build()).
 		Build()
 
-	resp, err := client.Drive.FileComment.Create(Context(), req)
+	resp, err := client.Drive.FileComment.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return "", fmt.Errorf("创建评论失败: %w", err)
 	}
@@ -139,13 +149,18 @@ func GetComment(fileToken string, commentID string, fileType string) (*Comment, 
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	req := larkdrive.NewGetFileCommentReqBuilder().
 		FileToken(fileToken).
 		CommentId(commentID).
 		FileType(fileType).
 		Build()
 
-	resp, err := client.Drive.FileComment.Get(Context(), req)
+	resp, err := client.Drive.FileComment.Get(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取评论详情失败: %w", err)
 	}
@@ -180,6 +195,11 @@ func PatchComment(fileToken, commentID, fileType string, isSolved bool) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	req := larkdrive.NewPatchFileCommentReqBuilder().
 		FileToken(fileToken).
 		CommentId(commentID).
@@ -189,7 +209,7 @@ func PatchComment(fileToken, commentID, fileType string, isSolved bool) error {
 			Build()).
 		Build()
 
-	resp, err := client.Drive.FileComment.Patch(Context(), req)
+	resp, err := client.Drive.FileComment.Patch(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("更新评论状态失败: %w", err)
 	}
@@ -217,6 +237,11 @@ func ListCommentReplies(fileToken, commentID, fileType string, pageSize int, pag
 		return nil, "", false, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, "", false, tokenErr
+	}
+
 	reqBuilder := larkdrive.NewListFileCommentReplyReqBuilder().
 		FileToken(fileToken).
 		CommentId(commentID).
@@ -229,7 +254,7 @@ func ListCommentReplies(fileToken, commentID, fileType string, pageSize int, pag
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Drive.FileCommentReply.List(Context(), reqBuilder.Build())
+	resp, err := client.Drive.FileCommentReply.List(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, "", false, fmt.Errorf("获取评论回复列表失败: %w", err)
 	}
@@ -276,6 +301,11 @@ func DeleteCommentReply(fileToken, commentID, replyID, fileType string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	req := larkdrive.NewDeleteFileCommentReplyReqBuilder().
 		FileToken(fileToken).
 		CommentId(commentID).
@@ -283,7 +313,7 @@ func DeleteCommentReply(fileToken, commentID, replyID, fileType string) error {
 		FileType(fileType).
 		Build()
 
-	resp, err := client.Drive.FileCommentReply.Delete(Context(), req)
+	resp, err := client.Drive.FileCommentReply.Delete(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("删除评论回复失败: %w", err)
 	}

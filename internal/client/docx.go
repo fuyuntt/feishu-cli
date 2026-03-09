@@ -24,6 +24,11 @@ func CreateDocument(title string, folderToken string) (*larkdocx.Document, error
 		return nil, err
 	}
 
+	tokenOpt, err := GetUserTokenOption()
+	if err != nil {
+		return nil, err
+	}
+
 	req := larkdocx.NewCreateDocumentReqBuilder().
 		Body(larkdocx.NewCreateDocumentReqBodyBuilder().
 			Title(title).
@@ -31,7 +36,7 @@ func CreateDocument(title string, folderToken string) (*larkdocx.Document, error
 			Build()).
 		Build()
 
-	resp, err := client.Docx.Document.Create(Context(), req)
+	resp, err := client.Docx.Document.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("创建文档失败: %w", err)
 	}
@@ -50,11 +55,16 @@ func GetDocument(documentID string) (*larkdocx.Document, error) {
 		return nil, err
 	}
 
+	tokenOpt, err := GetUserTokenOption()
+	if err != nil {
+		return nil, err
+	}
+
 	req := larkdocx.NewGetDocumentReqBuilder().
 		DocumentId(documentID).
 		Build()
 
-	resp, err := client.Docx.Document.Get(Context(), req)
+	resp, err := client.Docx.Document.Get(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取文档失败: %w", err)
 	}
@@ -73,11 +83,16 @@ func GetRawContent(documentID string) (string, error) {
 		return "", err
 	}
 
+	tokenOpt, err := GetUserTokenOption()
+	if err != nil {
+		return "", err
+	}
+
 	req := larkdocx.NewRawContentDocumentReqBuilder().
 		DocumentId(documentID).
 		Build()
 
-	resp, err := client.Docx.Document.RawContent(Context(), req)
+	resp, err := client.Docx.Document.RawContent(Context(), req, tokenOpt)
 	if err != nil {
 		return "", fmt.Errorf("获取原始内容失败: %w", err)
 	}
@@ -100,6 +115,11 @@ func ListBlocks(documentID string, pageToken string, pageSize int) ([]*larkdocx.
 		return nil, "", err
 	}
 
+	tokenOpt, err := GetUserTokenOption()
+	if err != nil {
+		return nil, "", err
+	}
+
 	reqBuilder := larkdocx.NewListDocumentBlockReqBuilder().
 		DocumentId(documentID).
 		PageSize(pageSize)
@@ -108,7 +128,7 @@ func ListBlocks(documentID string, pageToken string, pageSize int) ([]*larkdocx.
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Docx.DocumentBlock.List(Context(), reqBuilder.Build())
+	resp, err := client.Docx.DocumentBlock.List(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, "", fmt.Errorf("获取块列表失败: %w", err)
 	}
@@ -158,12 +178,17 @@ func GetBlock(documentID string, blockID string) (*larkdocx.Block, error) {
 		return nil, err
 	}
 
+	tokenOpt, err := GetUserTokenOption()
+	if err != nil {
+		return nil, err
+	}
+
 	req := larkdocx.NewGetDocumentBlockReqBuilder().
 		DocumentId(documentID).
 		BlockId(blockID).
 		Build()
 
-	resp, err := client.Docx.DocumentBlock.Get(Context(), req)
+	resp, err := client.Docx.DocumentBlock.Get(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取块失败: %w", err)
 	}
@@ -182,6 +207,11 @@ func CreateBlock(documentID string, blockID string, children []*larkdocx.Block, 
 		return nil, err
 	}
 
+	tokenOpt, err := GetUserTokenOption()
+	if err != nil {
+		return nil, err
+	}
+
 	req := larkdocx.NewCreateDocumentBlockChildrenReqBuilder().
 		DocumentId(documentID).
 		BlockId(blockID).
@@ -192,7 +222,7 @@ func CreateBlock(documentID string, blockID string, children []*larkdocx.Block, 
 			Build()).
 		Build()
 
-	resp, err := client.Docx.DocumentBlockChildren.Create(Context(), req)
+	resp, err := client.Docx.DocumentBlockChildren.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("创建块失败: %w", err)
 	}
@@ -207,6 +237,11 @@ func CreateBlock(documentID string, blockID string, children []*larkdocx.Block, 
 // UpdateBlock updates an existing block
 func UpdateBlock(documentID string, blockID string, updateContent any) error {
 	client, err := GetClient()
+	if err != nil {
+		return err
+	}
+
+	tokenOpt, err := GetUserTokenOption()
 	if err != nil {
 		return err
 	}
@@ -229,7 +264,7 @@ func UpdateBlock(documentID string, blockID string, updateContent any) error {
 		UpdateBlockRequest(&updateBody).
 		Build()
 
-	resp, err := client.Docx.DocumentBlock.Patch(Context(), req)
+	resp, err := client.Docx.DocumentBlock.Patch(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("更新块失败: %w", err)
 	}
@@ -249,6 +284,11 @@ func DeleteBlocks(documentID string, blockID string, startIndex int, endIndex in
 		return err
 	}
 
+	tokenOpt, err := GetUserTokenOption()
+	if err != nil {
+		return err
+	}
+
 	req := larkdocx.NewBatchDeleteDocumentBlockChildrenReqBuilder().
 		DocumentId(documentID).
 		BlockId(blockID).
@@ -259,7 +299,7 @@ func DeleteBlocks(documentID string, blockID string, startIndex int, endIndex in
 			Build()).
 		Build()
 
-	resp, err := client.Docx.DocumentBlockChildren.BatchDelete(Context(), req)
+	resp, err := client.Docx.DocumentBlockChildren.BatchDelete(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("删除块失败: %w", err)
 	}
@@ -291,6 +331,11 @@ func BatchUpdateBlocks(documentID string, requestsJSON string, opts BatchUpdateB
 		return nil, err
 	}
 
+	tokenOpt, err := GetUserTokenOption()
+	if err != nil {
+		return nil, err
+	}
+
 	// Default values
 	if opts.DocumentRevisionID == 0 {
 		opts.DocumentRevisionID = -1
@@ -317,7 +362,7 @@ func BatchUpdateBlocks(documentID string, requestsJSON string, opts BatchUpdateB
 		reqBuilder.ClientToken(opts.ClientToken)
 	}
 
-	resp, err := client.Docx.DocumentBlock.BatchUpdate(Context(), reqBuilder.Build())
+	resp, err := client.Docx.DocumentBlock.BatchUpdate(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("批量更新块失败: %w", err)
 	}
@@ -344,12 +389,17 @@ func GetBlockChildren(documentID string, blockID string) ([]*larkdocx.Block, err
 		return nil, err
 	}
 
+	tokenOpt, err := GetUserTokenOption()
+	if err != nil {
+		return nil, err
+	}
+
 	req := larkdocx.NewGetDocumentBlockChildrenReqBuilder().
 		DocumentId(documentID).
 		BlockId(blockID).
 		Build()
 
-	resp, err := client.Docx.DocumentBlockChildren.Get(Context(), req)
+	resp, err := client.Docx.DocumentBlockChildren.Get(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取子块失败: %w", err)
 	}
@@ -364,6 +414,11 @@ func GetBlockChildren(documentID string, blockID string) ([]*larkdocx.Block, err
 // GetAllBlockChildren retrieves all direct children of a block with pagination
 func GetAllBlockChildren(documentID string, blockID string) ([]*larkdocx.Block, error) {
 	client, err := GetClient()
+	if err != nil {
+		return nil, err
+	}
+
+	tokenOpt, err := GetUserTokenOption()
 	if err != nil {
 		return nil, err
 	}
@@ -384,7 +439,7 @@ func GetAllBlockChildren(documentID string, blockID string) ([]*larkdocx.Block, 
 			reqBuilder.PageToken(pageToken)
 		}
 
-		resp, err := client.Docx.DocumentBlockChildren.Get(Context(), reqBuilder.Build())
+		resp, err := client.Docx.DocumentBlockChildren.Get(Context(), reqBuilder.Build(), tokenOpt)
 		if err != nil {
 			return nil, fmt.Errorf("获取子块失败: %w", err)
 		}

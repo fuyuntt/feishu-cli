@@ -42,7 +42,12 @@ func GetWikiNode(token string) (*WikiNode, error) {
 		Token(token).
 		Build()
 
-	resp, err := client.Wiki.Space.GetNode(Context(), req)
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
+	resp, err := client.Wiki.Space.GetNode(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取节点信息失败: %w", err)
 	}
@@ -87,7 +92,12 @@ func ListWikiSpaces(pageSize int, pageToken string) ([]*WikiSpace, string, bool,
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Wiki.Space.List(Context(), reqBuilder.Build())
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, "", false, tokenErr
+	}
+
+	resp, err := client.Wiki.Space.List(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, "", false, fmt.Errorf("获取知识空间列表失败: %w", err)
 	}
@@ -139,7 +149,12 @@ func ListWikiNodes(spaceID string, parentNodeToken string, pageSize int, pageTok
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Wiki.SpaceNode.List(Context(), reqBuilder.Build())
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, "", false, tokenErr
+	}
+
+	resp, err := client.Wiki.SpaceNode.List(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, "", false, fmt.Errorf("获取节点列表失败: %w", err)
 	}
@@ -208,7 +223,12 @@ func CreateWikiNode(spaceID, title, parentNode, nodeType string) (*CreateWikiNod
 		Node(nodeBuilder.Build()).
 		Build()
 
-	resp, err := client.Wiki.SpaceNode.Create(Context(), req)
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
+	resp, err := client.Wiki.SpaceNode.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("创建知识库节点失败: %w", err)
 	}
@@ -247,7 +267,12 @@ func UpdateWikiNode(spaceID, nodeToken, title string) error {
 		Body(body).
 		Build()
 
-	resp, err := client.Wiki.SpaceNode.UpdateTitle(Context(), req)
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
+	resp, err := client.Wiki.SpaceNode.UpdateTitle(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("更新知识库节点标题失败: %w", err)
 	}
@@ -288,7 +313,12 @@ func GetWikiSpace(spaceID string) (*WikiSpaceDetail, error) {
 		SpaceId(spaceID).
 		Build()
 
-	resp, err := client.Wiki.Space.Get(Context(), req)
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
+	resp, err := client.Wiki.Space.Get(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取知识空间详情失败: %w", err)
 	}
@@ -331,7 +361,12 @@ func AddWikiSpaceMember(spaceID, memberType, memberID, memberRole string) error 
 		NeedNotification(true).
 		Build()
 
-	resp, err := client.Wiki.SpaceMember.Create(Context(), req)
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
+	resp, err := client.Wiki.SpaceMember.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("添加知识空间成员失败: %w", err)
 	}
@@ -360,7 +395,12 @@ func ListWikiSpaceMembers(spaceID string, pageSize int, pageToken string) ([]*Wi
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Wiki.SpaceMember.List(Context(), reqBuilder.Build())
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, "", false, tokenErr
+	}
+
+	resp, err := client.Wiki.SpaceMember.List(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, "", false, fmt.Errorf("获取知识空间成员列表失败: %w", err)
 	}
@@ -410,7 +450,12 @@ func RemoveWikiSpaceMember(spaceID, memberType, memberID, memberRole string) err
 		Member(member).
 		Build()
 
-	resp, err := client.Wiki.SpaceMember.Delete(Context(), req)
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
+	resp, err := client.Wiki.SpaceMember.Delete(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("移除知识空间成员失败: %w", err)
 	}
@@ -447,7 +492,12 @@ func MoveWikiNode(spaceID, nodeToken, targetSpaceID, targetParent string) (*Move
 		Body(bodyBuilder.Build()).
 		Build()
 
-	resp, err := client.Wiki.SpaceNode.Move(Context(), req)
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
+	resp, err := client.Wiki.SpaceNode.Move(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("移动知识库节点失败: %w", err)
 	}

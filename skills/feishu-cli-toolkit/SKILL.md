@@ -76,6 +76,36 @@ feishu-cli sheet find <token> <sheet_id> --find "旧文本"
 feishu-cli sheet replace <token> <sheet_id> --find "旧文本" --replace "新文本"
 ```
 
+### 从文档中读取嵌入的 Sheet
+
+飞书文档中嵌入的电子表格块导出后显示为：
+```markdown
+[Sheet: <sheet_token>](https://feishu.cn/sheets/<sheet_token>)
+```
+
+**读取步骤**：
+
+1. **获取 Sheet Token**：从导出的 Markdown 中提取链接中的 token
+2. **读取数据**：
+   ```bash
+   # 快速读取（V2 API，二维数组格式）
+   feishu-cli sheet read <sheet_token> "Sheet1!A1:Z100"
+
+   # 富文本读取（V3 API，保留样式）
+   feishu-cli sheet read-rich <sheet_token> <sheet_id> "A1:Z100"
+   ```
+
+**示例**：
+```bash
+# 1. 导出文档
+feishu-cli wiki export Rfj6wOmWOixSm2kazLkcpw4Nnpb -o /tmp/doc.md
+
+# 2. 从 Markdown 中找到 Sheet Token（如 I7SgsE9buhRYGttZ07NcYLW6n9d_iK7992）
+
+# 3. 读取 Sheet 数据
+feishu-cli sheet read I7SgsE9buhRYGttZ07NcYLW6n9d_iK7992 "Sheet1!A1:Z100"
+```
+
 ### API 限制
 
 - 单次写入最多 5000 个单元格，单元格最大 50000 字符

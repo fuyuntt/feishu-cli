@@ -45,6 +45,11 @@ func CreateTask(opts CreateTaskOptions) (*TaskInfo, error) {
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	taskBuilder := larktask.NewInputTaskBuilder().
 		Summary(opts.Summary)
 
@@ -86,7 +91,7 @@ func CreateTask(opts CreateTaskOptions) (*TaskInfo, error) {
 		InputTask(taskBuilder.Build()).
 		Build()
 
-	resp, err := client.Task.V2.Task.Create(Context(), req)
+	resp, err := client.Task.V2.Task.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("创建任务失败: %w", err)
 	}
@@ -109,12 +114,17 @@ func GetTask(taskGuid string) (*TaskInfo, error) {
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	req := larktask.NewGetTaskReqBuilder().
 		TaskGuid(taskGuid).
 		UserIdType("open_id").
 		Build()
 
-	resp, err := client.Task.V2.Task.Get(Context(), req)
+	resp, err := client.Task.V2.Task.Get(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取任务失败: %w", err)
 	}
@@ -144,6 +154,11 @@ func ListTasks(pageSize int, pageToken string, completed *bool) (*ListTasksResul
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	reqBuilder := larktask.NewListTaskReqBuilder().
 		UserIdType("open_id")
 
@@ -161,7 +176,7 @@ func ListTasks(pageSize int, pageToken string, completed *bool) (*ListTasksResul
 
 	req := reqBuilder.Build()
 
-	resp, err := client.Task.V2.Task.List(Context(), req)
+	resp, err := client.Task.V2.Task.List(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取任务列表失败: %w", err)
 	}
@@ -192,6 +207,11 @@ func UpdateTask(taskGuid string, opts UpdateTaskOptions) (*TaskInfo, error) {
 	client, err := GetClient()
 	if err != nil {
 		return nil, err
+	}
+
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
 	}
 
 	taskBuilder := larktask.NewInputTaskBuilder()
@@ -241,7 +261,7 @@ func UpdateTask(taskGuid string, opts UpdateTaskOptions) (*TaskInfo, error) {
 		Body(body).
 		Build()
 
-	resp, err := client.Task.V2.Task.Patch(Context(), req)
+	resp, err := client.Task.V2.Task.Patch(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("更新任务失败: %w", err)
 	}
@@ -264,11 +284,16 @@ func DeleteTask(taskGuid string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	req := larktask.NewDeleteTaskReqBuilder().
 		TaskGuid(taskGuid).
 		Build()
 
-	resp, err := client.Task.V2.Task.Delete(Context(), req)
+	resp, err := client.Task.V2.Task.Delete(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("删除任务失败: %w", err)
 	}
@@ -305,6 +330,11 @@ func CreateSubtask(taskGuid, summary string) (*TaskInfo, error) {
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	inputTask := larktask.NewInputTaskBuilder().
 		Summary(summary).
 		Build()
@@ -315,7 +345,7 @@ func CreateSubtask(taskGuid, summary string) (*TaskInfo, error) {
 		InputTask(inputTask).
 		Build()
 
-	resp, err := client.Task.V2.TaskSubtask.Create(Context(), req)
+	resp, err := client.Task.V2.TaskSubtask.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("创建子任务失败: %w", err)
 	}
@@ -338,6 +368,11 @@ func ListSubtasks(taskGuid string, pageSize int, pageToken string) ([]*TaskInfo,
 		return nil, "", false, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, "", false, tokenErr
+	}
+
 	reqBuilder := larktask.NewListTaskSubtaskReqBuilder().
 		TaskGuid(taskGuid).
 		UserIdType("open_id")
@@ -349,7 +384,7 @@ func ListSubtasks(taskGuid string, pageSize int, pageToken string) ([]*TaskInfo,
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Task.V2.TaskSubtask.List(Context(), reqBuilder.Build())
+	resp, err := client.Task.V2.TaskSubtask.List(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, "", false, fmt.Errorf("获取子任务列表失败: %w", err)
 	}
@@ -382,6 +417,11 @@ func AddTaskMembers(taskGuid string, memberIDs []string, memberRole string) erro
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	var members []*larktask.Member
 	for _, id := range memberIDs {
 		member := larktask.NewMemberBuilder().
@@ -402,7 +442,7 @@ func AddTaskMembers(taskGuid string, memberIDs []string, memberRole string) erro
 		Body(body).
 		Build()
 
-	resp, err := client.Task.V2.Task.AddMembers(Context(), req)
+	resp, err := client.Task.V2.Task.AddMembers(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("添加任务成员失败: %w", err)
 	}
@@ -419,6 +459,11 @@ func RemoveTaskMembers(taskGuid string, memberIDs []string, memberRole string) e
 	client, err := GetClient()
 	if err != nil {
 		return err
+	}
+
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
 	}
 
 	var members []*larktask.Member
@@ -441,7 +486,7 @@ func RemoveTaskMembers(taskGuid string, memberIDs []string, memberRole string) e
 		Body(body).
 		Build()
 
-	resp, err := client.Task.V2.Task.RemoveMembers(Context(), req)
+	resp, err := client.Task.V2.Task.RemoveMembers(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("移除任务成员失败: %w", err)
 	}
@@ -460,6 +505,11 @@ func AddTaskReminders(taskGuid string, relativeFireMinute int) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	reminder := larktask.NewReminderBuilder().
 		RelativeFireMinute(relativeFireMinute).
 		Build()
@@ -474,7 +524,7 @@ func AddTaskReminders(taskGuid string, relativeFireMinute int) error {
 		Body(body).
 		Build()
 
-	resp, err := client.Task.V2.Task.AddReminders(Context(), req)
+	resp, err := client.Task.V2.Task.AddReminders(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("添加任务提醒失败: %w", err)
 	}
@@ -493,6 +543,11 @@ func RemoveTaskReminders(taskGuid string, reminderIDs []string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	body := larktask.NewRemoveRemindersTaskReqBodyBuilder().
 		ReminderIds(reminderIDs).
 		Build()
@@ -503,7 +558,7 @@ func RemoveTaskReminders(taskGuid string, reminderIDs []string) error {
 		Body(body).
 		Build()
 
-	resp, err := client.Task.V2.Task.RemoveReminders(Context(), req)
+	resp, err := client.Task.V2.Task.RemoveReminders(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("移除任务提醒失败: %w", err)
 	}
@@ -522,6 +577,11 @@ func CreateTasklist(name string) (*TasklistInfo, error) {
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	inputTasklist := larktask.NewInputTasklistBuilder().
 		Name(name).
 		Build()
@@ -531,7 +591,7 @@ func CreateTasklist(name string) (*TasklistInfo, error) {
 		InputTasklist(inputTasklist).
 		Build()
 
-	resp, err := client.Task.V2.Tasklist.Create(Context(), req)
+	resp, err := client.Task.V2.Tasklist.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("创建任务清单失败: %w", err)
 	}
@@ -554,12 +614,17 @@ func GetTasklist(tasklistGuid string) (*TasklistInfo, error) {
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	req := larktask.NewGetTasklistReqBuilder().
 		TasklistGuid(tasklistGuid).
 		UserIdType("open_id").
 		Build()
 
-	resp, err := client.Task.V2.Tasklist.Get(Context(), req)
+	resp, err := client.Task.V2.Tasklist.Get(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取任务清单失败: %w", err)
 	}
@@ -582,6 +647,11 @@ func ListTasklists(pageSize int, pageToken string) ([]*TasklistInfo, string, boo
 		return nil, "", false, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, "", false, tokenErr
+	}
+
 	reqBuilder := larktask.NewListTasklistReqBuilder().
 		UserIdType("open_id")
 
@@ -592,7 +662,7 @@ func ListTasklists(pageSize int, pageToken string) ([]*TasklistInfo, string, boo
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Task.V2.Tasklist.List(Context(), reqBuilder.Build())
+	resp, err := client.Task.V2.Tasklist.List(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, "", false, fmt.Errorf("获取任务清单列表失败: %w", err)
 	}
@@ -625,11 +695,16 @@ func DeleteTasklist(tasklistGuid string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	req := larktask.NewDeleteTasklistReqBuilder().
 		TasklistGuid(tasklistGuid).
 		Build()
 
-	resp, err := client.Task.V2.Tasklist.Delete(Context(), req)
+	resp, err := client.Task.V2.Tasklist.Delete(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("删除任务清单失败: %w", err)
 	}

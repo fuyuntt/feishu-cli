@@ -20,6 +20,11 @@ func AddPermission(docToken string, docType string, member PermissionMember, not
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	memberObj := larkdrive.NewBaseMemberBuilder().
 		MemberType(member.MemberType).
 		MemberId(member.MemberID).
@@ -33,7 +38,7 @@ func AddPermission(docToken string, docType string, member PermissionMember, not
 		BaseMember(memberObj).
 		Build()
 
-	resp, err := client.Drive.PermissionMember.Create(Context(), req)
+	resp, err := client.Drive.PermissionMember.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("添加权限失败: %w", err)
 	}
@@ -52,12 +57,17 @@ func ListPermission(docToken string, docType string) ([]*larkdrive.Member, error
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	req := larkdrive.NewListPermissionMemberReqBuilder().
 		Token(docToken).
 		Type(docType).
 		Build()
 
-	resp, err := client.Drive.PermissionMember.List(Context(), req)
+	resp, err := client.Drive.PermissionMember.List(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取权限列表失败: %w", err)
 	}
@@ -76,6 +86,11 @@ func DeletePermission(docToken string, docType string, memberType string, member
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	req := larkdrive.NewDeletePermissionMemberReqBuilder().
 		Token(docToken).
 		Type(docType).
@@ -83,7 +98,7 @@ func DeletePermission(docToken string, docType string, memberType string, member
 		MemberType(memberType).
 		Build()
 
-	resp, err := client.Drive.PermissionMember.Delete(Context(), req)
+	resp, err := client.Drive.PermissionMember.Delete(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("删除权限失败: %w", err)
 	}
@@ -102,6 +117,11 @@ func TransferOwnership(docToken string, docType string, memberType string, membe
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	owner := larkdrive.NewOwnerBuilder().
 		MemberType(memberType).
 		MemberId(memberID).
@@ -117,7 +137,7 @@ func TransferOwnership(docToken string, docType string, memberType string, membe
 		Owner(owner).
 		Build()
 
-	resp, err := client.Drive.PermissionMember.TransferOwner(Context(), req)
+	resp, err := client.Drive.PermissionMember.TransferOwner(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("转移所有权失败: %w", err)
 	}
@@ -146,12 +166,17 @@ func GetPublicPermission(docToken, docType string) (*larkdrive.PermissionPublic,
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	req := larkdrive.NewGetPermissionPublicReqBuilder().
 		Token(docToken).
 		Type(docType).
 		Build()
 
-	resp, err := client.Drive.PermissionPublic.Get(Context(), req)
+	resp, err := client.Drive.PermissionPublic.Get(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取公共权限设置失败: %w", err)
 	}
@@ -172,6 +197,11 @@ func UpdatePublicPermissionV2(docToken, docType string, update PublicPermissionU
 	client, err := GetClient()
 	if err != nil {
 		return nil, err
+	}
+
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
 	}
 
 	builder := larkdrive.NewPermissionPublicRequestBuilder()
@@ -200,7 +230,7 @@ func UpdatePublicPermissionV2(docToken, docType string, update PublicPermissionU
 		PermissionPublicRequest(builder.Build()).
 		Build()
 
-	resp, err := client.Drive.PermissionPublic.Patch(Context(), req)
+	resp, err := client.Drive.PermissionPublic.Patch(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("更新公共权限失败: %w", err)
 	}
@@ -223,12 +253,17 @@ func CreatePublicPassword(docToken, docType string) (string, error) {
 		return "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", tokenErr
+	}
+
 	req := larkdrive.NewCreatePermissionPublicPasswordReqBuilder().
 		Token(docToken).
 		Type(docType).
 		Build()
 
-	resp, err := client.Drive.PermissionPublicPassword.Create(Context(), req)
+	resp, err := client.Drive.PermissionPublicPassword.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return "", fmt.Errorf("创建文档密码失败: %w", err)
 	}
@@ -251,12 +286,17 @@ func DeletePublicPassword(docToken, docType string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	req := larkdrive.NewDeletePermissionPublicPasswordReqBuilder().
 		Token(docToken).
 		Type(docType).
 		Build()
 
-	resp, err := client.Drive.PermissionPublicPassword.Delete(Context(), req)
+	resp, err := client.Drive.PermissionPublicPassword.Delete(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("删除文档密码失败: %w", err)
 	}
@@ -275,12 +315,17 @@ func UpdatePublicPassword(docToken, docType string) (string, error) {
 		return "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", tokenErr
+	}
+
 	req := larkdrive.NewUpdatePermissionPublicPasswordReqBuilder().
 		Token(docToken).
 		Type(docType).
 		Build()
 
-	resp, err := client.Drive.PermissionPublicPassword.Update(Context(), req)
+	resp, err := client.Drive.PermissionPublicPassword.Update(Context(), req, tokenOpt)
 	if err != nil {
 		return "", fmt.Errorf("刷新文档密码失败: %w", err)
 	}
@@ -303,6 +348,11 @@ func BatchAddPermission(docToken, docType string, members []*PermissionMember, n
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	baseMembers := make([]*larkdrive.BaseMember, 0, len(members))
 	for _, m := range members {
 		baseMembers = append(baseMembers, larkdrive.NewBaseMemberBuilder().
@@ -321,7 +371,7 @@ func BatchAddPermission(docToken, docType string, members []*PermissionMember, n
 			Build()).
 		Build()
 
-	resp, err := client.Drive.PermissionMember.BatchCreate(Context(), req)
+	resp, err := client.Drive.PermissionMember.BatchCreate(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("批量添加权限失败: %w", err)
 	}
@@ -340,13 +390,18 @@ func AuthPermission(docToken, docType, action string) (*larkdrive.AuthPermission
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	req := larkdrive.NewAuthPermissionMemberReqBuilder().
 		Token(docToken).
 		Type(docType).
 		Action(action).
 		Build()
 
-	resp, err := client.Drive.PermissionMember.Auth(Context(), req)
+	resp, err := client.Drive.PermissionMember.Auth(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("权限判断失败: %w", err)
 	}
@@ -369,6 +424,11 @@ func UpdatePermission(docToken string, docType string, memberID string, memberTy
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	req := larkdrive.NewUpdatePermissionMemberReqBuilder().
 		Token(docToken).
 		Type(docType).
@@ -380,7 +440,7 @@ func UpdatePermission(docToken string, docType string, memberID string, memberTy
 			Build()).
 		Build()
 
-	resp, err := client.Drive.PermissionMember.Update(Context(), req)
+	resp, err := client.Drive.PermissionMember.Update(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("更新权限失败: %w", err)
 	}

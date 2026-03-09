@@ -25,6 +25,11 @@ func UploadMedia(filePath string, parentType string, parentNode string, fileName
 		return "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", tokenErr
+	}
+
 	file, err := os.Open(filePath)
 	if err != nil {
 		return "", fmt.Errorf("打开文件失败: %w", err)
@@ -51,7 +56,7 @@ func UploadMedia(filePath string, parentType string, parentNode string, fileName
 			Build()).
 		Build()
 
-	resp, err := client.Drive.Media.UploadAll(Context(), req)
+	resp, err := client.Drive.Media.UploadAll(Context(), req, tokenOpt)
 	if err != nil {
 		return "", fmt.Errorf("上传素材失败: %w", err)
 	}
@@ -78,11 +83,16 @@ func DownloadMedia(fileToken string, outputPath string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	req := larkdrive.NewDownloadMediaReqBuilder().
 		FileToken(fileToken).
 		Build()
 
-	resp, err := client.Drive.Media.Download(ContextWithTimeout(downloadTimeout), req)
+	resp, err := client.Drive.Media.Download(ContextWithTimeout(downloadTimeout), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("下载素材失败: %w", err)
 	}
@@ -101,11 +111,16 @@ func GetMediaTempURL(fileToken string) (string, error) {
 		return "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", tokenErr
+	}
+
 	req := larkdrive.NewBatchGetTmpDownloadUrlMediaReqBuilder().
 		FileTokens([]string{fileToken}).
 		Build()
 
-	resp, err := client.Drive.Media.BatchGetTmpDownloadUrl(Context(), req)
+	resp, err := client.Drive.Media.BatchGetTmpDownloadUrl(Context(), req, tokenOpt)
 	if err != nil {
 		return "", fmt.Errorf("获取临时下载链接失败: %w", err)
 	}
@@ -206,6 +221,11 @@ func ListFiles(folderToken string, pageSize int, pageToken string) ([]*DriveFile
 		return nil, "", false, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, "", false, tokenErr
+	}
+
 	reqBuilder := larkdrive.NewListFileReqBuilder()
 	if folderToken != "" {
 		reqBuilder.FolderToken(folderToken)
@@ -217,7 +237,7 @@ func ListFiles(folderToken string, pageSize int, pageToken string) ([]*DriveFile
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Drive.File.List(Context(), reqBuilder.Build())
+	resp, err := client.Drive.File.List(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, "", false, fmt.Errorf("获取文件列表失败: %w", err)
 	}
@@ -259,6 +279,11 @@ func CreateFolder(name string, folderToken string) (string, string, error) {
 		return "", "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", "", tokenErr
+	}
+
 	req := larkdrive.NewCreateFolderFileReqBuilder().
 		Body(larkdrive.NewCreateFolderFileReqBodyBuilder().
 			Name(name).
@@ -266,7 +291,7 @@ func CreateFolder(name string, folderToken string) (string, string, error) {
 			Build()).
 		Build()
 
-	resp, err := client.Drive.File.CreateFolder(Context(), req)
+	resp, err := client.Drive.File.CreateFolder(Context(), req, tokenOpt)
 	if err != nil {
 		return "", "", fmt.Errorf("创建文件夹失败: %w", err)
 	}
@@ -291,6 +316,11 @@ func MoveFile(fileToken string, targetFolderToken string, fileType string) (stri
 		return "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", tokenErr
+	}
+
 	req := larkdrive.NewMoveFileReqBuilder().
 		Body(larkdrive.NewMoveFileReqBodyBuilder().
 			Type(fileType).
@@ -299,7 +329,7 @@ func MoveFile(fileToken string, targetFolderToken string, fileType string) (stri
 		FileToken(fileToken).
 		Build()
 
-	resp, err := client.Drive.File.Move(Context(), req)
+	resp, err := client.Drive.File.Move(Context(), req, tokenOpt)
 	if err != nil {
 		return "", fmt.Errorf("移动文件失败: %w", err)
 	}
@@ -322,6 +352,11 @@ func CopyFile(fileToken string, targetFolderToken string, name string, fileType 
 		return "", "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", "", tokenErr
+	}
+
 	reqBuilder := larkdrive.NewCopyFileReqBodyBuilder().
 		Type(fileType).
 		FolderToken(targetFolderToken)
@@ -335,7 +370,7 @@ func CopyFile(fileToken string, targetFolderToken string, name string, fileType 
 		Body(reqBuilder.Build()).
 		Build()
 
-	resp, err := client.Drive.File.Copy(Context(), req)
+	resp, err := client.Drive.File.Copy(Context(), req, tokenOpt)
 	if err != nil {
 		return "", "", fmt.Errorf("复制文件失败: %w", err)
 	}
@@ -360,12 +395,17 @@ func DeleteFile(fileToken string, fileType string) (string, error) {
 		return "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", tokenErr
+	}
+
 	req := larkdrive.NewDeleteFileReqBuilder().
 		FileToken(fileToken).
 		Type(fileType).
 		Build()
 
-	resp, err := client.Drive.File.Delete(Context(), req)
+	resp, err := client.Drive.File.Delete(Context(), req, tokenOpt)
 	if err != nil {
 		return "", fmt.Errorf("删除文件失败: %w", err)
 	}
@@ -396,6 +436,11 @@ func CreateShortcut(parentToken string, targetFileToken string, targetType strin
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	req := larkdrive.NewCreateShortcutFileReqBuilder().
 		Body(larkdrive.NewCreateShortcutFileReqBodyBuilder().
 			ParentToken(parentToken).
@@ -406,7 +451,7 @@ func CreateShortcut(parentToken string, targetFileToken string, targetType strin
 			Build()).
 		Build()
 
-	resp, err := client.Drive.File.CreateShortcut(Context(), req)
+	resp, err := client.Drive.File.CreateShortcut(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("创建快捷方式失败: %w", err)
 	}
@@ -438,11 +483,16 @@ func DownloadFile(fileToken string, outputPath string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	req := larkdrive.NewDownloadFileReqBuilder().
 		FileToken(fileToken).
 		Build()
 
-	resp, err := client.Drive.File.Download(ContextWithTimeout(downloadTimeout), req)
+	resp, err := client.Drive.File.Download(ContextWithTimeout(downloadTimeout), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("下载文件失败: %w", err)
 	}
@@ -459,6 +509,11 @@ func UploadFile(filePath, parentToken, fileName string) (string, error) {
 	client, err := GetClient()
 	if err != nil {
 		return "", err
+	}
+
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", tokenErr
 	}
 
 	file, err := os.Open(filePath)
@@ -487,7 +542,7 @@ func UploadFile(filePath, parentToken, fileName string) (string, error) {
 			Build()).
 		Build()
 
-	resp, err := client.Drive.File.UploadAll(ContextWithTimeout(downloadTimeout), req)
+	resp, err := client.Drive.File.UploadAll(ContextWithTimeout(downloadTimeout), req, tokenOpt)
 	if err != nil {
 		return "", fmt.Errorf("上传文件失败: %w", err)
 	}
@@ -542,6 +597,11 @@ func CreateFileVersion(fileToken, objType, name string) (*FileVersionInfo, error
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	version := larkdrive.NewVersionBuilder().
 		Name(name).
 		ObjType(objType).
@@ -552,7 +612,7 @@ func CreateFileVersion(fileToken, objType, name string) (*FileVersionInfo, error
 		Version(version).
 		Build()
 
-	resp, err := client.Drive.FileVersion.Create(Context(), req)
+	resp, err := client.Drive.FileVersion.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("创建文件版本失败: %w", err)
 	}
@@ -584,13 +644,18 @@ func GetFileVersion(fileToken, versionID, objType string) (*FileVersionInfo, err
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	req := larkdrive.NewGetFileVersionReqBuilder().
 		FileToken(fileToken).
 		VersionId(versionID).
 		ObjType(objType).
 		Build()
 
-	resp, err := client.Drive.FileVersion.Get(Context(), req)
+	resp, err := client.Drive.FileVersion.Get(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取文件版本失败: %w", err)
 	}
@@ -622,6 +687,11 @@ func ListFileVersions(fileToken, objType string, pageSize int, pageToken string)
 		return nil, "", false, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, "", false, tokenErr
+	}
+
 	reqBuilder := larkdrive.NewListFileVersionReqBuilder().
 		FileToken(fileToken).
 		ObjType(objType)
@@ -633,7 +703,7 @@ func ListFileVersions(fileToken, objType string, pageSize int, pageToken string)
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Drive.FileVersion.List(Context(), reqBuilder.Build())
+	resp, err := client.Drive.FileVersion.List(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, "", false, fmt.Errorf("获取文件版本列表失败: %w", err)
 	}
@@ -666,13 +736,18 @@ func DeleteFileVersion(fileToken, versionID, objType string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	req := larkdrive.NewDeleteFileVersionReqBuilder().
 		FileToken(fileToken).
 		VersionId(versionID).
 		ObjType(objType).
 		Build()
 
-	resp, err := client.Drive.FileVersion.Delete(Context(), req)
+	resp, err := client.Drive.FileVersion.Delete(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("删除文件版本失败: %w", err)
 	}
@@ -703,6 +778,11 @@ func BatchGetMeta(docTokens []string, docType string) ([]*FileMeta, error) {
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	var requestDocs []*larkdrive.RequestDoc
 	for _, token := range docTokens {
 		requestDocs = append(requestDocs, larkdrive.NewRequestDocBuilder().
@@ -721,7 +801,7 @@ func BatchGetMeta(docTokens []string, docType string) ([]*FileMeta, error) {
 		MetaRequest(metaRequest).
 		Build()
 
-	resp, err := client.Drive.Meta.BatchQuery(Context(), req)
+	resp, err := client.Drive.Meta.BatchQuery(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("批量获取文件元数据失败: %w", err)
 	}
@@ -768,12 +848,17 @@ func GetFileStatistics(fileToken, fileType string) (*FileStats, error) {
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	req := larkdrive.NewGetFileStatisticsReqBuilder().
 		FileToken(fileToken).
 		FileType(fileType).
 		Build()
 
-	resp, err := client.Drive.FileStatistics.Get(Context(), req)
+	resp, err := client.Drive.FileStatistics.Get(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取文件统计信息失败: %w", err)
 	}

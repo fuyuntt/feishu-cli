@@ -169,6 +169,40 @@ ls -la /tmp/doc_assets/
 3. **读取图片内容**：使用 Read 工具逐个读取图片
 4. **整合分析**：将图片描述与文档文本结合
 
+## 导出包含电子表格（Sheet）的文档
+
+飞书文档中可能嵌入电子表格块（Sheet 块），导出 Markdown 时会显示为链接格式：
+
+```markdown
+[Sheet: <sheet_token>](https://feishu.cn/sheets/<sheet_token>)
+```
+
+### 如何读取 Sheet 数据
+
+如需读取 Sheet 中的实际数据，使用电子表格命令：
+
+```bash
+# 1. 从导出的 Markdown 中找到 Sheet Token
+# [Sheet: I7SgsE9buhRYGttZ07NcYLW6n9d_iK7992](https://feishu.cn/sheets/...)
+
+# 2. 获取表格信息
+feishu-cli sheet get <sheet_token>
+feishu-cli sheet list-sheets <sheet_token>
+
+# 3. 读取数据
+feishu-cli sheet read <sheet_token> "Sheet1!A1:Z100"
+```
+
+### Sheet 读取命令对比
+
+| 命令 | 格式 | 适用场景 |
+|------|------|----------|
+| `sheet read` | 二维数组 | 纯文本、快速读取 |
+| `sheet read-plain` | 纯文本 | 去除格式的文本内容 |
+| `sheet read-rich` | 三维数组（富文本） | 保留单元格样式 |
+
+详细用法参考 `/feishu-cli-toolkit` 技能中的电子表格模块。
+
 ## 错误处理与边界情况
 
 ### 1. 常见错误

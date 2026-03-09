@@ -13,6 +13,11 @@ func CreateChat(name, description, ownerID string, userIDs []string, chatType st
 		return "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", tokenErr
+	}
+
 	bodyBuilder := larkim.NewCreateChatReqBodyBuilder()
 	if name != "" {
 		bodyBuilder.Name(name)
@@ -34,7 +39,7 @@ func CreateChat(name, description, ownerID string, userIDs []string, chatType st
 		Body(bodyBuilder.Build()).
 		Build()
 
-	resp, err := client.Im.Chat.Create(Context(), req)
+	resp, err := client.Im.Chat.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return "", fmt.Errorf("创建群聊失败: %w", err)
 	}
@@ -57,11 +62,16 @@ func GetChat(chatID string) (*larkim.GetChatRespData, error) {
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	req := larkim.NewGetChatReqBuilder().
 		ChatId(chatID).
 		Build()
 
-	resp, err := client.Im.Chat.Get(Context(), req)
+	resp, err := client.Im.Chat.Get(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取群聊信息失败: %w", err)
 	}
@@ -80,6 +90,11 @@ func UpdateChat(chatID, name, description, ownerID string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	bodyBuilder := larkim.NewUpdateChatReqBodyBuilder()
 	if name != "" {
 		bodyBuilder.Name(name)
@@ -96,7 +111,7 @@ func UpdateChat(chatID, name, description, ownerID string) error {
 		Body(bodyBuilder.Build()).
 		Build()
 
-	resp, err := client.Im.Chat.Update(Context(), req)
+	resp, err := client.Im.Chat.Update(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("更新群聊信息失败: %w", err)
 	}
@@ -115,11 +130,16 @@ func DeleteChat(chatID string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	req := larkim.NewDeleteChatReqBuilder().
 		ChatId(chatID).
 		Build()
 
-	resp, err := client.Im.Chat.Delete(Context(), req)
+	resp, err := client.Im.Chat.Delete(Context(), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("解散群聊失败: %w", err)
 	}
@@ -138,6 +158,11 @@ func GetChatLink(chatID string, validityPeriod string) (string, error) {
 		return "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", tokenErr
+	}
+
 	bodyBuilder := larkim.NewLinkChatReqBodyBuilder()
 	if validityPeriod != "" {
 		bodyBuilder.ValidityPeriod(validityPeriod)
@@ -148,7 +173,7 @@ func GetChatLink(chatID string, validityPeriod string) (string, error) {
 		Body(bodyBuilder.Build()).
 		Build()
 
-	resp, err := client.Im.Chat.Link(Context(), req)
+	resp, err := client.Im.Chat.Link(Context(), req, tokenOpt)
 	if err != nil {
 		return "", fmt.Errorf("获取群分享链接失败: %w", err)
 	}
@@ -186,6 +211,11 @@ func ListChatMembers(chatID, memberIDType string, pageSize int, pageToken string
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	reqBuilder := larkim.NewGetChatMembersReqBuilder().
 		ChatId(chatID)
 
@@ -199,7 +229,7 @@ func ListChatMembers(chatID, memberIDType string, pageSize int, pageToken string
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Im.ChatMembers.Get(Context(), reqBuilder.Build())
+	resp, err := client.Im.ChatMembers.Get(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取群成员列表失败: %w", err)
 	}
@@ -231,6 +261,11 @@ func AddChatMembers(chatID, memberIDType string, idList []string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	reqBuilder := larkim.NewCreateChatMembersReqBuilder().
 		ChatId(chatID).
 		Body(larkim.NewCreateChatMembersReqBodyBuilder().
@@ -241,7 +276,7 @@ func AddChatMembers(chatID, memberIDType string, idList []string) error {
 		reqBuilder.MemberIdType(memberIDType)
 	}
 
-	resp, err := client.Im.ChatMembers.Create(Context(), reqBuilder.Build())
+	resp, err := client.Im.ChatMembers.Create(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return fmt.Errorf("添加群成员失败: %w", err)
 	}
@@ -260,6 +295,11 @@ func RemoveChatMembers(chatID, memberIDType string, idList []string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	reqBuilder := larkim.NewDeleteChatMembersReqBuilder().
 		ChatId(chatID).
 		Body(larkim.NewDeleteChatMembersReqBodyBuilder().
@@ -270,7 +310,7 @@ func RemoveChatMembers(chatID, memberIDType string, idList []string) error {
 		reqBuilder.MemberIdType(memberIDType)
 	}
 
-	resp, err := client.Im.ChatMembers.Delete(Context(), reqBuilder.Build())
+	resp, err := client.Im.ChatMembers.Delete(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return fmt.Errorf("移除群成员失败: %w", err)
 	}

@@ -31,6 +31,11 @@ func BatchGetUserID(emails, mobiles []string) ([]*UserContactIDInfo, error) {
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	bodyBuilder := larkcontact.NewBatchGetIdUserReqBodyBuilder()
 	if len(emails) > 0 {
 		bodyBuilder.Emails(emails)
@@ -44,7 +49,7 @@ func BatchGetUserID(emails, mobiles []string) ([]*UserContactIDInfo, error) {
 		Body(bodyBuilder.Build()).
 		Build()
 
-	resp, err := client.Contact.User.BatchGetId(Context(), req)
+	resp, err := client.Contact.User.BatchGetId(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("批量查询用户 ID 失败: %w", err)
 	}
@@ -74,6 +79,11 @@ func ListUsers(departmentID, userIDType string, pageSize int, pageToken string) 
 		return nil, "", false, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, "", false, tokenErr
+	}
+
 	if userIDType == "" {
 		userIDType = "open_id"
 	}
@@ -89,7 +99,7 @@ func ListUsers(departmentID, userIDType string, pageSize int, pageToken string) 
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Contact.User.List(Context(), reqBuilder.Build())
+	resp, err := client.Contact.User.List(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, "", false, fmt.Errorf("获取用户列表失败: %w", err)
 	}
@@ -145,6 +155,11 @@ func GetDepartment(departmentID, userIDType, departmentIDType string) (*Departme
 		return nil, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
 	if userIDType == "" {
 		userIDType = "open_id"
 	}
@@ -158,7 +173,7 @@ func GetDepartment(departmentID, userIDType, departmentIDType string) (*Departme
 		DepartmentIdType(departmentIDType).
 		Build()
 
-	resp, err := client.Contact.Department.Get(Context(), req)
+	resp, err := client.Contact.Department.Get(Context(), req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取部门信息失败: %w", err)
 	}
@@ -181,6 +196,11 @@ func ListDepartments(parentDepartmentID, userIDType, departmentIDType string, pa
 		return nil, "", false, err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, "", false, tokenErr
+	}
+
 	if userIDType == "" {
 		userIDType = "open_id"
 	}
@@ -200,7 +220,7 @@ func ListDepartments(parentDepartmentID, userIDType, departmentIDType string, pa
 		reqBuilder.PageToken(pageToken)
 	}
 
-	resp, err := client.Contact.Department.Children(Context(), reqBuilder.Build())
+	resp, err := client.Contact.Department.Children(Context(), reqBuilder.Build(), tokenOpt)
 	if err != nil {
 		return nil, "", false, fmt.Errorf("获取子部门列表失败: %w", err)
 	}

@@ -14,6 +14,11 @@ func CreateExportTask(docToken, docType, fileExtension string) (string, error) {
 		return "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", tokenErr
+	}
+
 	exportTask := larkdrive.NewExportTaskBuilder().
 		Token(docToken).
 		Type(docType).
@@ -24,7 +29,7 @@ func CreateExportTask(docToken, docType, fileExtension string) (string, error) {
 		ExportTask(exportTask).
 		Build()
 
-	resp, err := client.Drive.ExportTask.Create(Context(), req)
+	resp, err := client.Drive.ExportTask.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return "", fmt.Errorf("创建导出任务失败: %w", err)
 	}
@@ -48,12 +53,17 @@ func GetExportTask(ticket, docToken string) (int, string, error) {
 		return -1, "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return -1, "", tokenErr
+	}
+
 	req := larkdrive.NewGetExportTaskReqBuilder().
 		Ticket(ticket).
 		Token(docToken).
 		Build()
 
-	resp, err := client.Drive.ExportTask.Get(Context(), req)
+	resp, err := client.Drive.ExportTask.Get(Context(), req, tokenOpt)
 	if err != nil {
 		return -1, "", fmt.Errorf("查询导出任务失败: %w", err)
 	}
@@ -93,11 +103,16 @@ func DownloadExportFile(fileToken, outputPath string) error {
 		return err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
 	req := larkdrive.NewDownloadExportTaskReqBuilder().
 		FileToken(fileToken).
 		Build()
 
-	resp, err := client.Drive.ExportTask.Download(ContextWithTimeout(downloadTimeout), req)
+	resp, err := client.Drive.ExportTask.Download(ContextWithTimeout(downloadTimeout), req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("下载导出文件失败: %w", err)
 	}
@@ -135,6 +150,11 @@ func CreateImportTask(fileToken, fileType, fileName, targetType, folderToken str
 		return "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return "", tokenErr
+	}
+
 	taskBuilder := larkdrive.NewImportTaskBuilder().
 		FileExtension(fileType).
 		FileToken(fileToken).
@@ -155,7 +175,7 @@ func CreateImportTask(fileToken, fileType, fileName, targetType, folderToken str
 		ImportTask(taskBuilder.Build()).
 		Build()
 
-	resp, err := client.Drive.ImportTask.Create(Context(), req)
+	resp, err := client.Drive.ImportTask.Create(Context(), req, tokenOpt)
 	if err != nil {
 		return "", fmt.Errorf("创建导入任务失败: %w", err)
 	}
@@ -179,11 +199,16 @@ func GetImportTask(ticket string) (int, string, string, error) {
 		return -1, "", "", err
 	}
 
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return -1, "", "", tokenErr
+	}
+
 	req := larkdrive.NewGetImportTaskReqBuilder().
 		Ticket(ticket).
 		Build()
 
-	resp, err := client.Drive.ImportTask.Get(Context(), req)
+	resp, err := client.Drive.ImportTask.Get(Context(), req, tokenOpt)
 	if err != nil {
 		return -1, "", "", fmt.Errorf("查询导入任务失败: %w", err)
 	}

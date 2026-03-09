@@ -207,7 +207,12 @@ func CreateSpreadsheet(ctx context.Context, title string, folderToken string) (*
 			Build()).
 		Build()
 
-	resp, err := client.Sheets.Spreadsheet.Create(ctx, req)
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
+	resp, err := client.Sheets.Spreadsheet.Create(ctx, req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("创建电子表格失败: %w", err)
 	}
@@ -234,7 +239,12 @@ func GetSpreadsheet(ctx context.Context, spreadsheetToken string) (*SpreadsheetI
 		SpreadsheetToken(spreadsheetToken).
 		Build()
 
-	resp, err := client.Sheets.Spreadsheet.Get(ctx, req)
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
+	resp, err := client.Sheets.Spreadsheet.Get(ctx, req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取电子表格信息失败: %w", err)
 	}
@@ -273,7 +283,12 @@ func UpdateSpreadsheetTitle(ctx context.Context, spreadsheetToken, title string)
 			Build()).
 		Build()
 
-	resp, err := client.Sheets.Spreadsheet.Patch(ctx, req)
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
+	resp, err := client.Sheets.Spreadsheet.Patch(ctx, req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("更新表格标题失败: %w", err)
 	}
@@ -296,7 +311,12 @@ func QuerySheets(ctx context.Context, spreadsheetToken string) ([]*SheetInfo, er
 		SpreadsheetToken(spreadsheetToken).
 		Build()
 
-	resp, err := client.Sheets.SpreadsheetSheet.Query(ctx, req)
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
+	resp, err := client.Sheets.SpreadsheetSheet.Query(ctx, req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("查询工作表失败: %w", err)
 	}
@@ -349,7 +369,12 @@ func GetSheet(ctx context.Context, spreadsheetToken, sheetID string) (*SheetInfo
 		SheetId(sheetID).
 		Build()
 
-	resp, err := client.Sheets.SpreadsheetSheet.Get(ctx, req)
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
+	resp, err := client.Sheets.SpreadsheetSheet.Get(ctx, req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("获取工作表信息失败: %w", err)
 	}
@@ -411,7 +436,12 @@ func FindCells(ctx context.Context, spreadsheetToken, sheetID string, findStr st
 			Build()).
 		Build()
 
-	resp, err := client.Sheets.SpreadsheetSheet.Find(ctx, req)
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
+	resp, err := client.Sheets.SpreadsheetSheet.Find(ctx, req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("查找单元格失败: %w", err)
 	}
@@ -462,7 +492,12 @@ func ReplaceCells(ctx context.Context, spreadsheetToken, sheetID string, findStr
 			Build()).
 		Build()
 
-	resp, err := client.Sheets.SpreadsheetSheet.Replace(ctx, req)
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
+	resp, err := client.Sheets.SpreadsheetSheet.Replace(ctx, req, tokenOpt)
 	if err != nil {
 		return nil, fmt.Errorf("替换单元格失败: %w", err)
 	}
@@ -487,6 +522,17 @@ func ReplaceCells(ctx context.Context, spreadsheetToken, sheetID string, findStr
 
 // v2APICall 封装 V2 API 调用
 func v2APICall(client *lark.Client, ctx context.Context, method, path string, body any) ([]byte, error) {
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
+	// 确定令牌类型：如果有用户令牌选项，使用用户令牌；否则使用租户令牌
+	tokenType := larkcore.AccessTokenTypeTenant
+	if tokenOpt != nil {
+		tokenType = larkcore.AccessTokenTypeUser
+	}
+
 	var resp *larkcore.ApiResp
 	var err error
 
@@ -494,13 +540,29 @@ func v2APICall(client *lark.Client, ctx context.Context, method, path string, bo
 	// 不要在这里预先序列化，否则会导致双重序列化
 	switch method {
 	case "GET":
-		resp, err = client.Get(ctx, path, nil, larkcore.AccessTokenTypeTenant)
+		if tokenOpt != nil {
+			resp, err = client.Get(ctx, path, nil, tokenType, tokenOpt)
+		} else {
+			resp, err = client.Get(ctx, path, nil, tokenType)
+		}
 	case "POST":
-		resp, err = client.Post(ctx, path, body, larkcore.AccessTokenTypeTenant)
+		if tokenOpt != nil {
+			resp, err = client.Post(ctx, path, body, tokenType, tokenOpt)
+		} else {
+			resp, err = client.Post(ctx, path, body, tokenType)
+		}
 	case "PUT":
-		resp, err = client.Put(ctx, path, body, larkcore.AccessTokenTypeTenant)
+		if tokenOpt != nil {
+			resp, err = client.Put(ctx, path, body, tokenType, tokenOpt)
+		} else {
+			resp, err = client.Put(ctx, path, body, tokenType)
+		}
 	case "DELETE":
-		resp, err = client.Delete(ctx, path, body, larkcore.AccessTokenTypeTenant)
+		if tokenOpt != nil {
+			resp, err = client.Delete(ctx, path, body, tokenType, tokenOpt)
+		} else {
+			resp, err = client.Delete(ctx, path, body, tokenType)
+		}
 	default:
 		return nil, fmt.Errorf("不支持的 HTTP 方法: %s", method)
 	}
@@ -1360,7 +1422,12 @@ func CreateFilter(ctx context.Context, spreadsheetToken, sheetID, rangeStr strin
 		CreateSheetFilter(filterBuilder.Build()).
 		Build()
 
-	resp, err := client.Sheets.SpreadsheetSheetFilter.Create(ctx, req)
+	tokenOpt, tokenErr := GetUserTokenOption()
+	if tokenErr != nil {
+		return tokenErr
+	}
+
+	resp, err := client.Sheets.SpreadsheetSheetFilter.Create(ctx, req, tokenOpt)
 	if err != nil {
 		return fmt.Errorf("创建筛选失败: %w", err)
 	}

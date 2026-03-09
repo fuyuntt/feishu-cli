@@ -213,6 +213,68 @@ feishu-cli wiki export <child_node_token_1> -o /tmp/child1.md
 feishu-cli wiki export <child_node_token_2> -o /tmp/child2.md
 ```
 
+## 读取包含电子表格（Sheet）的文档
+
+飞书文档中可能嵌入电子表格块（Sheet 块），导出 Markdown 时会显示为链接格式：
+
+```markdown
+[Sheet: <sheet_token>](https://feishu.cn/sheets/<sheet_token>)
+```
+
+### 完整读取流程
+
+**步骤 1：导出文档获取 Sheet Token**
+
+```bash
+feishu-cli wiki export <node_token> -o /tmp/doc.md
+```
+
+从导出的 Markdown 中查找 Sheet 链接，提取 `sheet_token`。
+
+**步骤 2：读取 Sheet 内容**
+
+使用电子表格命令读取 Sheet 数据：
+
+```bash
+# 获取表格信息和工作表列表
+feishu-cli sheet get <sheet_token>
+feishu-cli sheet list-sheets <sheet_token>
+
+# V2 API 读取（简单二维数组，适合纯文本数据）
+feishu-cli sheet read <sheet_token> "Sheet1!A1:Z100"
+
+# V3 API 读取（富文本格式，保留样式）
+feishu-cli sheet read-plain <sheet_token> <sheet_id> "A1:Z100"
+feishu-cli sheet read-rich <sheet_token> <sheet_id> "A1:Z100"
+```
+
+**步骤 3：整合分析**
+
+将文档文本内容与 Sheet 数据结合，提供完整的内容分析。
+
+### 示例：读取带 Sheet 的知识库文档
+
+```bash
+# 1. 导出文档
+feishu-cli wiki export Rfj6wOmWOixSm2kazLkcpw4Nnpb -o /tmp/wiki_doc.md
+
+# 2. 查看导出内容，找到 Sheet 链接
+# [Sheet: I7SgsE9buhRYGttZ07NcYLW6n9d_iK7992](https://feishu.cn/sheets/I7SgsE9buhRYGttZ07NcYLW6n9d_iK7992)
+
+# 3. 读取 Sheet 数据
+feishu-cli sheet read I7SgsE9buhRYGttZ07NcYLW6n9d_iK7992 "Sheet1!A1:Z100"
+
+# 4. 综合分析文档和表格内容
+```
+
+### Sheet 读取命令对比
+
+| 命令 | 格式 | 适用场景 |
+|------|------|----------|
+| `sheet read` | 二维数组 `[["A1","B1"]]` | 纯文本、快速读取 |
+| `sheet read-plain` | 纯文本 | 去除格式的文本内容 |
+| `sheet read-rich` | 三维数组（富文本） | 保留单元格样式、合并单元格等 |
+
 ## 错误处理与边界情况
 
 ### 1. 常见错误
