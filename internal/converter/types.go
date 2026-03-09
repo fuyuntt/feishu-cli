@@ -119,6 +119,18 @@ type UserResolver interface {
 	BatchResolve(userIDs []string) map[string]MentionUserInfo
 }
 
+// SheetData 表示电子表格数据
+type SheetData struct {
+	Values [][]string // 单元格数据
+}
+
+// SheetReader 定义读取内嵌电子表格内容的接口
+type SheetReader interface {
+	// ReadSheet 读取电子表格内容
+	// sheetToken 格式为 "{spreadsheet_token}_{sheet_id}"
+	ReadSheet(sheetToken string) (*SheetData, error)
+}
+
 // blockTypeName 映射所有已知块类型到可读名称
 var blockTypeName = map[BlockType]string{
 	BlockTypePage:              "Page",

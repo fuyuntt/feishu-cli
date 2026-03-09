@@ -89,7 +89,9 @@ var exportWikiCmd = &cobra.Command{
 			AssetsDir:      assetsDir,
 		}
 
-		conv := converter.NewBlockToMarkdown(blocks, options)
+		// 创建转换器（支持读取内嵌电子表格）
+		sheetReader := &FeishuSheetReader{}
+		conv := converter.NewBlockToMarkdownWithSheetReader(blocks, options, sheetReader)
 		markdown, err := conv.Convert()
 		if err != nil {
 			return fmt.Errorf("转换为 Markdown 失败: %w", err)

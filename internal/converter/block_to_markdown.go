@@ -25,6 +25,7 @@ type BlockToMarkdown struct {
 	imageCount    int
 	headingSeqs   []string                   // 标题自动编号状态，按深度索引（depth-1）
 	userCache     map[string]MentionUserInfo // 用户 ID → 信息缓存
+	sheetReader   SheetReader                // 电子表格读取器
 }
 
 // NewBlockToMarkdown creates a new converter
@@ -111,6 +112,26 @@ func NewBlockToMarkdown(blocks []*larkdocx.Block, options ConvertOptions) *Block
 // NewBlockToMarkdownWithResolver 创建支持 @用户 展开的转换器
 func NewBlockToMarkdownWithResolver(blocks []*larkdocx.Block, options ConvertOptions, resolver UserResolver) *BlockToMarkdown {
 	c := NewBlockToMarkdown(blocks, options)
+	if resolver != nil && options.ExpandMentions {
+		userIDs := c.collectMentionUserIDs()
+		if len(userIDs) > 0 {
+			c.userCache = resolver.BatchResolve(userIDs)
+		}
+	}
+	return c
+}
+
+// NewBlockToMarkdownWithSheetReader 创建支持读取内嵌电子表格的转换器
+func NewBlockToMarkdownWithSheetReader(blocks []*larkdocx.Block, options ConvertOptions, sheetReader SheetReader) *BlockToMarkdown {
+	c := NewBlockToMarkdown(blocks, options)
+	c.sheetReader = sheetReader
+	return c
+}
+
+// NewBlockToMarkdownFull 创建支持 SheetReader 和 UserResolver 的转换器
+func NewBlockToMarkdownFull(blocks []*larkdocx.Block, options ConvertOptions, sheetReader SheetReader, resolver UserResolver) *BlockToMarkdown {
+	c := NewBlockToMarkdown(blocks, options)
+	c.sheetReader = sheetReader
 	if resolver != nil && options.ExpandMentions {
 		userIDs := c.collectMentionUserIDs()
 		if len(userIDs) > 0 {
@@ -1001,7 +1022,83 @@ func (c *BlockToMarkdown) convertSheet(block *larkdocx.Block) (string, error) {
 		token = *block.Sheet.Token
 	}
 
-	return fmt.Sprintf("[Sheet: %s](https://feishu.cn/sheets/%s)\n", token, token), nil
+	// 如果没有 sheetReader，回退到链接格式
+	if c.sheetReader == nil {
+		return fmt.Sprintf("[Sheet: %s](https://feishu.cn/sheets/%s)\n", token, token), nil
+	}
+
+	// 尝试读取表格内容
+	sheetData, err := c.sheetReader.ReadSheet(token)
+	if err != nil {
+		// 读取失败，回退到链接格式
+		return fmt.Sprintf("[Sheet: %s](https://feishu.cn/sheets/%s)\n", token, token), nil
+	}
+
+	// 将表格数据转换为 Markdown 表格
+	return c.sheetDataToMarkdownTable(sheetData, token), nil
+}
+
+// sheetDataToMarkdownTable 将表格数据转换为 Markdown 表格格式
+func (c *BlockToMarkdown) sheetDataToMarkdownTable(data *SheetData, token string) string {
+	if data == nil || len(data.Values) == 0 {
+		return fmt.Sprintf("[Sheet: %s](https://feishu.cn/sheets/%s)\n", token, token)
+	}
+
+	var sb strings.Builder
+
+	// 计算每列最大宽度
+	colWidths := make([]int, 0)
+	for _, row := range data.Values {
+		for i, cell := range row {
+			if i >= len(colWidths) {
+				colWidths = append(colWidths, len(cell))
+			} else if len(cell) > colWidths[i] {
+				colWidths[i] = len(cell)
+			}
+		}
+	}
+
+	// 确保至少有一列
+	if len(colWidths) == 0 {
+		return fmt.Sprintf("[Sheet: %s](https://feishu.cn/sheets/%s)\n", token, token)
+	}
+
+	// 填充列宽度到统一数量
+	maxCols := len(colWidths)
+	for i := range data.Values {
+		for len(data.Values[i]) < maxCols {
+			data.Values[i] = append(data.Values[i], "")
+		}
+	}
+
+	// 生成表格
+	for i, row := range data.Values {
+		// 生成行内容
+		sb.WriteString("|")
+		for j, cell := range row {
+			sb.WriteString(" ")
+			sb.WriteString(cell)
+			// 填充空格对齐
+			if len(cell) < colWidths[j] {
+				sb.WriteString(strings.Repeat(" ", colWidths[j]-len(cell)))
+			}
+			sb.WriteString(" |")
+		}
+		sb.WriteString("\n")
+
+		// 第一行后添加分隔线
+		if i == 0 {
+			sb.WriteString("|")
+			for j := 0; j < maxCols; j++ {
+				sb.WriteString(" ")
+				sb.WriteString(strings.Repeat("-", colWidths[j]))
+				sb.WriteString(" |")
+			}
+			sb.WriteString("\n")
+		}
+	}
+
+	return sb.String()
 }
 
 func (c *BlockToMarkdown) convertChatCard(block *larkdocx.Block) (string, error) {

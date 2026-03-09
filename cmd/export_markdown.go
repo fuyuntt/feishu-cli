@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/riba2534/feishu-cli/internal/client"
 	"github.com/riba2534/feishu-cli/internal/config"
@@ -64,13 +66,13 @@ var exportMarkdownCmd = &cobra.Command{
 			ExpandMentions: expandMentions,
 		}
 
-		var conv *converter.BlockToMarkdown
+		// 创建转换器（支持读取内嵌电子表格和展开 @用户）
+		sheetReader := &FeishuSheetReader{}
+		var userResolver converter.UserResolver
 		if expandMentions {
-			resolver := &FeishuUserResolver{}
-			conv = converter.NewBlockToMarkdownWithResolver(blocks, options, resolver)
-		} else {
-			conv = converter.NewBlockToMarkdown(blocks, options)
+			userResolver = &FeishuUserResolver{}
 		}
+		conv := converter.NewBlockToMarkdownFull(blocks, options, sheetReader, userResolver)
 		markdown, err := conv.Convert()
 		if err != nil {
 			return fmt.Errorf("转换为 Markdown 失败: %w", err)
@@ -126,5 +128,86 @@ func init() {
 	exportMarkdownCmd.Flags().String("assets-dir", "./assets", "图片和画板的保存目录")
 	exportMarkdownCmd.Flags().Bool("front-matter", false, "添加 YAML front matter (标题和文档 ID)")
 	exportMarkdownCmd.Flags().Bool("highlight", false, "保留文本颜色和背景色 (输出为 HTML span)")
-	exportMarkdownCmd.Flags().Bool("expand-mentions", true, "展开 @用户为友好格式 (需要 contact:user.base:readonly 权限)")
+	exportMarkdownCmd.Flags().Bool("expand-entions", true, "展开 @用户为友好格式 (需要 contact:user.base:readonly 权限)")
+}
+
+// FeishuSheetReader 实现 converter.SheetReader 接口
+type FeishuSheetReader struct{}
+
+// ReadSheet 读取内嵌电子表格内容
+// sheetToken 格式为 "{spreadsheet_token}_{sheet_id}"
+func (r *FeishuSheetReader) ReadSheet(sheetToken string) (*converter.SheetData, error) {
+	// 解析 token：格式为 {spreadsheet_token}_{sheet_id}
+	parts := strings.SplitN(sheetToken, "_", 2)
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("invalid sheet token format: %s", sheetToken)
+	}
+
+	spreadsheetToken := parts[0]
+	sheetID := parts[1]
+
+	// 获取工作表信息以确定行列数
+	sheets, err := client.QuerySheets(context.Background(), spreadsheetToken)
+	if err != nil {
+		return nil, fmt.Errorf("获取工作表列表失败: %w", err)
+	}
+
+	var targetSheet *client.SheetInfo
+	for _, s := range sheets {
+		if s.SheetID == sheetID {
+			targetSheet = s
+			break
+		}
+	}
+	if targetSheet == nil {
+		return nil, fmt.Errorf("未找到工作表: %s", sheetID)
+	}
+
+	// 读取表格内容
+	rangeStr := fmt.Sprintf("%s!A1:%s%d", sheetID, columnLetter(targetSheet.ColCount), targetSheet.RowCount)
+	cellRange, err := client.ReadCells(context.Background(), spreadsheetToken, rangeStr, "ToString", "FormattedString")
+	if err != nil {
+		return nil, fmt.Errorf("读取单元格失败: %w", err)
+	}
+
+	// 转换为 SheetData
+	result := &converter.SheetData{
+		Values: make([][]string, 0),
+	}
+
+	if cellRange != nil && cellRange.Values != nil {
+		for _, row := range cellRange.Values {
+			rowData := make([]string, 0)
+			for _, cell := range row {
+				cellStr := ""
+				if cell != nil {
+					switch v := cell.(type) {
+					case string:
+						cellStr = v
+					case float64:
+						cellStr = fmt.Sprintf("%.0f", v)
+					case nil:
+						cellStr = ""
+					default:
+						cellStr = fmt.Sprintf("%v", v)
+					}
+				}
+				rowData = append(rowData, cellStr)
+			}
+			result.Values = append(result.Values, rowData)
+		}
+	}
+
+	return result, nil
+}
+
+// columnLetter 将列号转换为 Excel 列字母（1=A, 2=B, ..., 27=AA）
+func columnLetter(col int) string {
+	result := ""
+	for col > 0 {
+		col--
+		result = string(rune('A'+(col%26))) + result
+		col /= 26
+	}
+	return result
 }
