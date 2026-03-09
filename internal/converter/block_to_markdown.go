@@ -121,14 +121,8 @@ func NewBlockToMarkdownWithResolver(blocks []*larkdocx.Block, options ConvertOpt
 	return c
 }
 
-// NewBlockToMarkdownWithSheetReader 创建支持读取内嵌电子表格的转换器
-func NewBlockToMarkdownWithSheetReader(blocks []*larkdocx.Block, options ConvertOptions, sheetReader SheetReader) *BlockToMarkdown {
-	c := NewBlockToMarkdown(blocks, options)
-	c.sheetReader = sheetReader
-	return c
-}
-
 // NewBlockToMarkdownFull 创建支持 SheetReader 和 UserResolver 的转换器
+// 如果 resolver 为 nil，则不解析 @用户
 func NewBlockToMarkdownFull(blocks []*larkdocx.Block, options ConvertOptions, sheetReader SheetReader, resolver UserResolver) *BlockToMarkdown {
 	c := NewBlockToMarkdown(blocks, options)
 	c.sheetReader = sheetReader

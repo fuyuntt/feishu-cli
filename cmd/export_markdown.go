@@ -131,6 +131,9 @@ func init() {
 	exportMarkdownCmd.Flags().Bool("expand-entions", true, "展开 @用户为友好格式 (需要 contact:user.base:readonly 权限)")
 }
 
+// sheetTokenSeparator 是内嵌表格 token 中 spreadsheet_token 和 sheet_id 的分隔符
+const sheetTokenSeparator = "_"
+
 // FeishuSheetReader 实现 converter.SheetReader 接口
 type FeishuSheetReader struct{}
 
@@ -138,7 +141,7 @@ type FeishuSheetReader struct{}
 // sheetToken 格式为 "{spreadsheet_token}_{sheet_id}"
 func (r *FeishuSheetReader) ReadSheet(sheetToken string) (*converter.SheetData, error) {
 	// 解析 token：格式为 {spreadsheet_token}_{sheet_id}
-	parts := strings.SplitN(sheetToken, "_", 2)
+	parts := strings.SplitN(sheetToken, sheetTokenSeparator, 2)
 	if len(parts) != 2 {
 		return nil, fmt.Errorf("invalid sheet token format: %s", sheetToken)
 	}
@@ -172,33 +175,40 @@ func (r *FeishuSheetReader) ReadSheet(sheetToken string) (*converter.SheetData, 
 
 	// 转换为 SheetData
 	result := &converter.SheetData{
-		Values: make([][]string, 0),
+		Values: make([][]string, 0, len(cellRange.Values)),
 	}
 
 	if cellRange != nil && cellRange.Values != nil {
 		for _, row := range cellRange.Values {
-			rowData := make([]string, 0)
-			for _, cell := range row {
-				cellStr := ""
-				if cell != nil {
-					switch v := cell.(type) {
-					case string:
-						cellStr = v
-					case float64:
-						cellStr = fmt.Sprintf("%.0f", v)
-					case nil:
-						cellStr = ""
-					default:
-						cellStr = fmt.Sprintf("%v", v)
-					}
-				}
-				rowData = append(rowData, cellStr)
-			}
-			result.Values = append(result.Values, rowData)
+			result.Values = append(result.Values, convertRowToStrings(row))
 		}
 	}
 
 	return result, nil
+}
+
+// convertRowToStrings 将一行单元格数据转换为字符串数组
+func convertRowToStrings(row []interface{}) []string {
+	rowData := make([]string, 0, len(row))
+	for _, cell := range row {
+		rowData = append(rowData, convertCellToString(cell))
+	}
+	return rowData
+}
+
+// convertCellToString 将单元格值转换为字符串
+func convertCellToString(cell interface{}) string {
+	if cell == nil {
+		return ""
+	}
+	switch v := cell.(type) {
+	case string:
+		return v
+	case float64:
+		return fmt.Sprintf("%.0f", v)
+	default:
+		return fmt.Sprintf("%v", v)
+	}
 }
 
 // columnLetter 将列号转换为 Excel 列字母（1=A, 2=B, ..., 27=AA）
